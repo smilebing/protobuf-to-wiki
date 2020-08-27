@@ -1,2 +1,9 @@
 # Project exclude paths
 /out/
+$CACHE_FILE$
+$PRODUCT_WORKSPACE_FILE$
+.gitignore
+codeStyles/
+misc.xml
+modules.xml
+vcs.xml
