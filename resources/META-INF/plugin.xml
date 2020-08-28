@@ -27,12 +27,19 @@
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
     <themeProvider id="2d79925d-936c-49f7-a64a-9edf6a7288dc" path="/MyTheme.theme.json"/>
+    <applicationService serviceInterface="My" serviceImplementation="impl.MyImpl"/>
   </extensions>
 
   <actions>
     <!-- Add your actions here -->
     <action id="MyAction" class="MyAction" text="test" description="test">
       <add-to-group group-id="ToolsMenu" anchor="first"/>
+    </action>
+    <action id="QQPlugin.ProtoToWiki" class="com.smilepig.ProtobufToWikiAction" text="ProtobufToWiki"
+            description="自动生成protobuf对应的接口文档">
+      <add-to-group group-id="EditMenu" anchor="after" relative-to-action="$Redo"/>
+      <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="Generate"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="meta P"/>
     </action>
   </actions>
 
