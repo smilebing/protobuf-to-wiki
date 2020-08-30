@@ -7,12 +7,16 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.JBColor;
+import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -22,6 +26,8 @@ import javax.swing.event.HyperlinkListener;
  */
 public class ProtobufToWikiAction extends AnAction {
 
+    private final static Logger logger = LoggerFactory.getLogger(ProtobufToWikiAction.class);
+
     @Override
     public void actionPerformed(AnActionEvent e) {
         Project project = e.getData(PlatformDataKeys.PROJECT);
@@ -29,9 +35,21 @@ public class ProtobufToWikiAction extends AnAction {
         Editor editor = e.getData(PlatformDataKeys.EDITOR);
         assert editor != null;
         SelectionModel selectionModel = editor.getSelectionModel();
+        logger.info("selectionModel:{}", selectionModel);
         String selectedText = selectionModel.getSelectedText();
 
-        String name = Messages.showInputDialog(project, "请输入域账号2", "提示", Messages.getQuestionIcon());
+        //登陆
+        LoginDialog loginDialog = new LoginDialog(true);
+        loginDialog.show();
+        if (loginDialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            String name = loginDialog.getjTextFieldName().getText().trim();
+            String pwd = loginDialog.getjTextFieldPwd().getText().trim();
+            boolean selected = loginDialog.getjCheckBox().isSelected();
+            logger.debug("登陆,name:{},pwd:{},selected:{}", name, pwd, selected);
+            //todo:zh 登陆
+        } else {
+            return;
+        }
 
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             @Override
@@ -56,7 +74,6 @@ public class ProtobufToWikiAction extends AnAction {
 
 
         //发送通知
-        SimpleNotification simpleNotification = new SimpleNotification();
-        simpleNotification.notify(project, "<a href='http://www.baidu.com'>link</a>");
+        SimpleNotification.notify(project, "<a href='http://www.baidu.com'>link</a>");
     }
 }

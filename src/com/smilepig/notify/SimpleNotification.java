@@ -11,15 +11,23 @@ import com.intellij.openapi.project.Project;
  */
 public class SimpleNotification {
 
-    private NotificationGroup NOTIFICATION_GROUP =
+    private volatile static Notification notification;
+
+    private static NotificationGroup NOTIFICATION_GROUP =
             new NotificationGroup("protobuf-to-wiki", NotificationDisplayType.BALLOON, true);
 
 
-    public void notify(Project project, String content) {
-        final Notification notification = NOTIFICATION_GROUP.createNotification("protobuf-to-wiki",
-                                                                                content,
-                                                                                NotificationType.INFORMATION,
-                                                                                new WikiGenerateNotificationListener());
+    public static void notify(Project project, String content) {
+        if (notification == null) {
+            synchronized (SimpleNotification.class) {
+                if (notification == null) {
+                    notification = NOTIFICATION_GROUP.createNotification("protobuf-to-wiki",
+                                                                         content,
+                                                                         NotificationType.INFORMATION,
+                                                                         new WikiGenerateNotificationListener());
+                }
+            }
+        }
         notification.notify(project);
     }
 }
