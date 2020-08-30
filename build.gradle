@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.21'
+}
+
+group 'com.hasaki'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    //mavenCentral() 阿里云仓库地址
+    maven {
+        url 'http://maven.aliyun.com/nexus/content/groups/public/'
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version '2019.1.2'
+}
+patchPluginXml {
+    changeNotes """
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>"""
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.apache.axis/axis
+    compile group: 'org.apache.axis', name: 'axis', version: '1.4'
+    // https://mvnrepository.com/artifact/axis/axis-jaxrpc
+    compile group: 'axis', name: 'axis-jaxrpc', version: '1.4'
+    // https://mvnrepository.com/artifact/wsdl4j/wsdl4j
+    compile group: 'wsdl4j', name: 'wsdl4j', version: '1.4'
+    // https://mvnrepository.com/artifact/commons-discovery/commons-discovery
+    compile group: 'commons-discovery', name: 'commons-discovery', version: '0.5'
+    // https://mvnrepository.com/artifact/commons-logging/commons-logging
+    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+}
