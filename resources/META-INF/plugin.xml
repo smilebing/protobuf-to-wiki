@@ -1,17 +1,15 @@
 <idea-plugin>
-  <id>com.your.company.unique.plugin.id</id>
-  <name>Plugin display name here</name>
+  <id>com.smilepig.protobuf-to-wiki</id>
+  <name>protobuf-to-wiki</name>
   <version>1.0</version>
-  <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+  <vendor email="iblandshot@gmailcom" url="http://www.zhudahe.cn">smilepig</vendor>
 
   <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <em>most HTML tags may be used</em>
+      把生成protobuf对应的接口文档<br>
     ]]></description>
 
   <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
+      v1.0 <br>
     ]]>
   </change-notes>
 
@@ -26,8 +24,6 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
-    <themeProvider id="2d79925d-936c-49f7-a64a-9edf6a7288dc" path="/MyTheme.theme.json"/>
-    <applicationService serviceInterface="My" serviceImplementation="impl.MyImpl"/>
   </extensions>
 
   <actions>
@@ -40,6 +36,11 @@
       <add-to-group group-id="EditMenu" anchor="after" relative-to-action="$Redo"/>
       <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="Generate"/>
       <keyboard-shortcut keymap="$default" first-keystroke="meta P"/>
+    </action>
+
+    <action class="com.smilepig.PsiNavigationDemoAction" id="PsiNavigationDemo"
+            text="PSI Navigation Demo...">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
     </action>
   </actions>
 
