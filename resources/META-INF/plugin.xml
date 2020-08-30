@@ -38,10 +38,6 @@
       <keyboard-shortcut keymap="$default" first-keystroke="meta P"/>
     </action>
 
-    <action class="com.smilepig.PsiNavigationDemoAction" id="PsiNavigationDemo"
-            text="PSI Navigation Demo...">
-      <add-to-group group-id="ToolsMenu" anchor="last"/>
-    </action>
   </actions>
 
 </idea-plugin>
