@@ -1,11 +1,11 @@
 <idea-plugin>
-  <id>com.smilepig.protobuf-to-wiki</id>
+  <id>com.hasaki</id>
   <name>protobuf-to-wiki</name>
   <version>1.0</version>
   <vendor email="iblandshot@gmailcom" url="http://www.zhudahe.cn">smilepig</vendor>
 
   <description><![CDATA[
-      把生成protobuf对应的接口文档<br>
+      把生成protobuf对应的接口文档,轻轻内部使用，暂时没有适配其他公司<br>
     ]]></description>
 
   <change-notes><![CDATA[
@@ -28,7 +28,7 @@
 
   <actions>
     <!-- Add your actions here -->
-    <action id="MyAction" class="MyAction" text="test" description="test">
+    <action id="com.smilepig.MyAction" class="com.smilepig.MyAction" text="test" description="test">
       <add-to-group group-id="ToolsMenu" anchor="first"/>
     </action>
     <action id="QQPlugin.ProtoToWiki" class="com.smilepig.ProtobufToWikiAction" text="ProtobufToWiki"

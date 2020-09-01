@@ -1,4 +1,5 @@
-import com.android.aapt.Resources.String;
+package com.smilepig;
+
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
