@@ -4,11 +4,11 @@ import com.hasaki.wiki.ConfluenceSoapService;
 import com.hasaki.wiki.ConfluenceSoapServiceServiceLocator;
 import com.hasaki.wiki.RemotePage;
 import com.hasaki.wiki.RemoteSearchResult;
-import org.apache.commons.discovery.ResourceClassDiscover;
-import org.hamcrest.BaseMatcher;
 
 import javax.xml.rpc.ServiceException;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Properties;
 
 /**
  * @Description
@@ -25,19 +25,48 @@ public class WIkiOptDemo {
      * @throws ServiceException
      */
     public static void main(String[] args) throws IOException, ServiceException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("D:\\account.properties"));
+        String username = properties.getProperty("username");
+        String password = properties.getProperty("password");
+
         ConfluenceSoapServiceServiceLocator locator = new ConfluenceSoapServiceServiceLocator();
         ConfluenceSoapService confluenceSoapService = locator.getConfluenceserviceV2();
-        String token = confluenceSoapService.login("username", "password");
+        String token = confluenceSoapService.login(username, password);
+
+//        RemotePage page = confluenceSoapService.getPage(token, 224494261L);
+//        String content = page.getContent();
+//        Document document = Jsoup.parse(content);
+//
+//        Elements elements = document.getElementsMatchingOwnText("HOST");
+//        Element element = elements.get(0);
+//        Elements children = element.parent().parent().children();
+//        for (Element elemment : children) {
+//            Element currentEle = elemment.child(1);
+//            if("HOST".equals(elemment.child(0).text())){
+//                currentEle.text("host");
+//            }
+//            if("URL".equals(elemment.child(0).text())){
+//                currentEle.text("url");
+//            }
+//            if("Method".equals(elemment.child(0).text())){
+//                currentEle.text("method");
+//            }
+//            if("Header".equals(elemment.child(0).text())){
+//                currentEle.text("header");
+//            }
+//        }
+//
+//        HtmlCompressor htmlCompressor = new HtmlCompressor();
+//        String html = htmlCompressor.compress(document.outerHtml());
+//        page.setContent(html);
 
         RemoteSearchResult[] search = confluenceSoapService.search(token, "PBFF 父课程上课接口", 10);
         for (RemoteSearchResult remoteSearchResult : search) {
             long id = remoteSearchResult.getId();
-            RemotePage page = confluenceSoapService.getPage(token, id);
-            System.out.println(page.getContent());
+            RemotePage page1 = confluenceSoapService.getPage(token, id);
+            System.out.println(page1.getContent());
         }
-
-        //confluenceSoapService.storePage()
-        System.out.println(search);
+//        confluenceSoapService.storePage(token, page);
     }
-
 }

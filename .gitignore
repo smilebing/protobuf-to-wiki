@@ -7,3 +7,6 @@ codeStyles/
 misc.xml
 modules.xml
 vcs.xml
+protobuf-to-wiki.iml
+/.idea
+/.gradle
