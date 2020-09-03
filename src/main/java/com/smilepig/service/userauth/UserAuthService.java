@@ -1,4 +1,4 @@
-package com.smilepig.userauth;
+package com.smilepig.service.userauth;
 
 /**
  * Created by zhuhe on 2020/9/3
