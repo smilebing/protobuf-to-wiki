@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.project.Project;
@@ -15,6 +16,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.JBColor;
 import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
+import com.smilepig.userauth.UserAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,18 +40,31 @@ public class ProtobufToWikiAction extends AnAction {
         logger.info("selectionModel:{}", selectionModel);
         String selectedText = selectionModel.getSelectedText();
 
-        //登陆
-        LoginDialog loginDialog = new LoginDialog(true);
-        loginDialog.show();
-        if (loginDialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-            String name = loginDialog.getjTextFieldName().getText().trim();
-            String pwd = loginDialog.getjTextFieldPwd().getText().trim();
-            boolean selected = loginDialog.getjCheckBox().isSelected();
-            logger.debug("登陆,name:{},pwd:{},selected:{}", name, pwd, selected);
-            //todo:zh 登陆
-        } else {
+
+        // Ensure this isn't part of testing
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
             return;
         }
+
+        //获取授权service
+        UserAuthService userAuthService = ServiceManager.getService(UserAuthService.class);
+        //判断用户授权是否有效
+        if(!userAuthService.isAuthed()){
+            //登陆
+            LoginDialog loginDialog = new LoginDialog(true);
+            loginDialog.show();
+            if (loginDialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+                String name = loginDialog.getjTextFieldName().getText().trim();
+                String pwd = loginDialog.getjTextFieldPwd().getText().trim();
+                boolean selected = loginDialog.getjCheckBox().isSelected();
+                logger.debug("登陆,name:{},pwd:{},selected:{}", name, pwd, selected);
+                //todo:zh 登陆
+            } else {
+                return;
+            }
+        }
+
+
 
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             @Override
