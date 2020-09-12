@@ -23,6 +23,8 @@ import java.util.Properties;
  */
 public class InterfacePageService {
 
+    private static final String wikiTemplate = "<table><tbody><tr><th><p style=\"text-align: center;\"><span style=\"color: rgb(255,0,0);\">业务描述或备注</span></p></th></tr><tr><td colspan=\"1\"><p>列表接口一定要描述返回数据的内容</p></td></tr></tbody></table><table><tbody><tr><td>HOST</td><td><p><span style=\"color: rgb(255,0,0);\">选择一个</span></p><p><a href=\"http://api.changingedu.com\">http://cdn.</a><a href=\"http://api.changingedu.com\">api.</a><a href=\"http://api.changingedu.com\">changingedu.com</a></p><p><a href=\"http://api.changingedu.com\">http://api.changingedu.com</a></p><p><a href=\"http://api.changingedu.com\">http://api.idc.cedu.cn</a></p></td></tr><tr><td>URL</td><td>/api/...</td></tr><tr><td colspan=\"1\">Description</td><td colspan=\"1\"><span style=\"color: rgb(192,192,192);\">接口主要功能</span></td></tr><tr><td>Method</td><td>POST</td></tr><tr><td>Header</td><td>Content-Type: application/x-protobuf</td></tr><tr><td><span>Request-Body</span></td><td><p><ac:structured-macro ac:name=\"include\"><ac:parameter ac:name=\"\"><ac:link><ri:page ri:content-title=\"utils-SimpleBoolRequest\" /></ac:link></ac:parameter></ac:structured-macro></p></td></tr><tr><td><span>Response</span></td><td><ac:structured-macro ac:name=\"include\"><ac:parameter ac:name=\"\"><ac:link><ri:page ri:content-title=\"resp-SimpleResponse\" /></ac:link></ac:parameter></ac:structured-macro></td></tr><tr><td colspan=\"1\">Error Code</td><td colspan=\"1\">&nbsp;</td></tr></tbody></table>";
+
     private static ConfluenceSoapService confluenceSoapService;
     private static String token;
     private HtmlCompressor htmlCompressor = new HtmlCompressor();
@@ -60,12 +62,18 @@ public class InterfacePageService {
     public void updatePageInfo(PageEditInfo pageEditInfo) throws RemoteException {
         RemotePage page = confluenceSoapService.getPage(token, pageEditInfo.getPageId());
 
-        String content = page.getContent();
-        Document document = Jsoup.parse(content);
         //标题
         if(pageEditInfo.getTitle() != null){
             page.setTitle(pageEditInfo.getTitle());
         }
+        //内容
+        String result = editPageContent(pageEditInfo, page.getContent());
+        page.setContent(result);
+        confluenceSoapService.storePage(token, page);
+    }
+
+    private String editPageContent(PageEditInfo pageEditInfo, String content) {
+        Document document = Jsoup.parse(content);
 
         //获取所有include元素 Request-Body Response
         Elements elementsByTag = document.getElementsByTag("ri:page");
@@ -110,9 +118,7 @@ public class InterfacePageService {
             }
         }
 
-        String result = htmlCompressor.compress(document.outerHtml());
-        page.setContent(result);
-        confluenceSoapService.storePage(token, page);
+        return htmlCompressor.compress(document.outerHtml());
     }
 
 
@@ -125,16 +131,25 @@ public class InterfacePageService {
         InterfacePageService interfacePageService = getInstance();
         PageEditInfo pageEditInfo = new PageEditInfo();
         pageEditInfo.setPageId(224494261L);
-        pageEditInfo.setTitle("测试测试测试");
+        pageEditInfo.setTitle("测试测试测试666");
         pageEditInfo.setRemark("测试测试666");
         pageEditInfo.setHost("host1111");
         pageEditInfo.setUrl("url111111");
-        pageEditInfo.setMethod("method11111111");
+        pageEditInfo.setMethod("gogogo");
         pageEditInfo.setHeader("header111111111");
-        pageEditInfo.setRequestBodyTitle("coursesvc_third_party_refund-CourseSvcOrderCourseFinishMockRequest");
+        pageEditInfo.setRequestBodyTitle("orderservice_activity-OrderServiceActivityParticipateResponse");
         pageEditInfo.setResponseBodyTitle("resp-SimpleResponse");
-        interfacePageService.updatePageInfo(pageEditInfo);
+        interfacePageService.createPageInfo(pageEditInfo,224494261L);
+    }
 
+    public void createPageInfo(PageEditInfo pageEditInfo, Long parentId) throws RemoteException {
+        RemotePage page = new RemotePage();
+        page.setParentId(parentId);
+        page.setTitle(pageEditInfo.getTitle());
+        String content = editPageContent(pageEditInfo, wikiTemplate);
+        page.setContent(content);
+        page.setSpace("BS");
+        confluenceSoapService.storePage(token, page);
     }
 
 
