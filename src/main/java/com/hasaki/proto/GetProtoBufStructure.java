@@ -111,8 +111,8 @@ public class GetProtoBufStructure {
                                     }
                                     if (isLine(line, s)) {
                                         ProtoStructureBean protoStructureBean = new ProtoStructureBean();
-                                        protoStructureBean.setProtoName(fileName + "-" + s);
-                                        protoStructureBean.setProtoTitle(s);
+                                        protoStructureBean.setProtoTitle(fileName + "-" + s);
+                                        protoStructureBean.setProtoName(s);
                                         protoStructureBean.setProtoFileName(fileName);
                                         protoStructureBean.setImportTitleList(importList);
                                         protoStructureBeans.add(protoStructureBean);
@@ -179,7 +179,7 @@ public class GetProtoBufStructure {
             getJarName(jarFiles, protoMap, protoStructureBeansAll);
             List<ProtoStructureBean> protoStructureBeans = new ArrayList<>();
             for (ProtoStructureBean protoStructureBean : protoStructureBeansAll) {
-                if ((protoStructureBean.getProtoTitle().endsWith("Response") || protoStructureBean.getProtoTitle().endsWith("Request")) && !protoStructureBean.getProtoTitle().equals("BaseResponse")) {
+                if ((protoStructureBean.getProtoName().endsWith("Response") || protoStructureBean.getProtoName().endsWith("Request")) && !protoStructureBean.getProtoName().equals("BaseResponse")) {
                     setProtoStructureBeans(protoStructureBean, protoStructureBeansAll);
                     protoStructureBeans.add(protoStructureBean);
                 }
@@ -196,7 +196,7 @@ public class GetProtoBufStructure {
         if (protoStructureBean.getSubProtoTitles() != null && protoStructureBean.getSubProtoTitles().size() > 0) {
             for (String subProtoTitle : protoStructureBean.getSubProtoTitles()) {
                 for (ProtoStructureBean structureBean : protoStructureBeans) {
-                    if (structureBean.getProtoTitle().equals(subProtoTitle)) {
+                    if (structureBean.getProtoName().equals(subProtoTitle)) {
                         List<ProtoStructureBean> protoStructureBeanList = protoStructureBean.getProtoStructureBeans();
                         if (protoStructureBeanList == null) {
                             protoStructureBeanList = new ArrayList<>();

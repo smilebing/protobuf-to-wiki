@@ -8,16 +8,29 @@ import java.util.List;
  * @Date 2020/9/2 16:42
  **/
 public class ProtoStructureBean {
+    /**
+     * 所属文件名
+     */
     private String protoFileName;
-
+    /**
+     * proto名称
+     */
     private String protoName;
-
+    /**
+     * 所属文件名+ proto名称
+     */
     private String  protoTitle;
-
+    /**
+     * proto结构
+     */
     private String  protoStructure;
-
+    /**
+     * proto包含的子名称
+     */
     private List<String> subProtoTitles;
-
+    /**
+     * proto导入的架包名称
+     */
     private List<String>  importTitleList;
 
     public List<String> getImportTitleList() {
@@ -27,7 +40,9 @@ public class ProtoStructureBean {
     public void setImportTitleList(List<String> importTitleList) {
         this.importTitleList = importTitleList;
     }
-
+    /**
+     * proto包含的子proto结构
+     */
     private List<ProtoStructureBean> protoStructureBeans;
 
     public List<ProtoStructureBean> getProtoStructureBeans() {
