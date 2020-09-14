@@ -293,19 +293,16 @@ public class GetProtoBufStructure {
         String filepath = directoryPath;//file文件夹的目录
         File file = new File(filepath);//File类型可以是文件也可以是文件夹
         File[] fileList = file.listFiles();//将该目录下的所有文件放置在一个File类型的数组中
-        List<File> wjList = new ArrayList<>();//新建一个文件集合
+       String strFile=null;//新建一个文件集合
         for (int i = 0; i < fileList.length; i++) {
-            if (fileList[i].isFile() && fileList[i].getName().endsWith(".jar")) {//判断是否为文件
-                wjList.add(fileList[i]);
+            if (fileList[i].isFile() && fileList[i].getName().endsWith("1.0.0-SNAPSHOT.jar")) {//判断是否为文件
+                strFile=fileList[i].toString();
             }
         }
-        if (wjList.size() <= 0) {
+        if (strFile==null) {
             throw new Exception("目标架包不存在");
         }
-        if (wjList.size() > 1) {
-            return wjList.get(wjList.size() - 2).toString();
-        }
-        return wjList.get(0).toString();
+        return strFile;
 
     }
 
