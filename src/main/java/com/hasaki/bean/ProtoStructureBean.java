@@ -18,6 +18,16 @@ public class ProtoStructureBean {
 
     private List<String> subProtoTitles;
 
+    private List<String>  importTitleList;
+
+    public List<String> getImportTitleList() {
+        return importTitleList;
+    }
+
+    public void setImportTitleList(List<String> importTitleList) {
+        this.importTitleList = importTitleList;
+    }
+
     private List<ProtoStructureBean> protoStructureBeans;
 
     public List<ProtoStructureBean> getProtoStructureBeans() {
