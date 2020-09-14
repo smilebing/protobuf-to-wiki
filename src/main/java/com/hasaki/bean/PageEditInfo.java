@@ -22,10 +22,10 @@ public class PageEditInfo {
     private String header;
 
     //对应proto地址title(文件名+类名)
-    private String requestBodyTitle;
+    private ProtoStructureBean requestProto;
 
     //对应proto地址title(文件名+类名)
-    private String responseBodyTitle;
+    private ProtoStructureBean responseProto;
 
     public Long getPageId() {
         return pageId;
@@ -83,20 +83,19 @@ public class PageEditInfo {
         this.header = header;
     }
 
-    public String getRequestBodyTitle() {
-        return requestBodyTitle;
+    public ProtoStructureBean getRequestProto() {
+        return requestProto;
     }
 
-    public void setRequestBodyTitle(String requestBodyTitle) {
-        this.requestBodyTitle = requestBodyTitle;
+    public void setRequestProto(ProtoStructureBean requestProto) {
+        this.requestProto = requestProto;
     }
 
-    public String getResponseBodyTitle() {
-        return responseBodyTitle;
+    public ProtoStructureBean getResponseProto() {
+        return responseProto;
     }
 
-    public void setResponseBodyTitle(String responseBodyTitle) {
-        this.responseBodyTitle = responseBodyTitle;
+    public void setResponseProto(ProtoStructureBean responseProto) {
+        this.responseProto = responseProto;
     }
-
 }

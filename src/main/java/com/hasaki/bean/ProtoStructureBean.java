@@ -8,6 +8,8 @@ import java.util.List;
  * @Date 2020/9/2 16:42
  **/
 public class ProtoStructureBean {
+    private String protoFileName;
+
     private String protoName;
 
     private String  protoTitle;
@@ -20,6 +22,14 @@ public class ProtoStructureBean {
 
     public List<ProtoStructureBean> getProtoStructureBeans() {
         return protoStructureBeans;
+    }
+
+    public String getProtoFileName() {
+        return protoFileName;
+    }
+
+    public void setProtoFileName(String protoFileName) {
+        this.protoFileName = protoFileName;
     }
 
     public void setProtoStructureBeans(List<ProtoStructureBean> protoStructureBeans) {

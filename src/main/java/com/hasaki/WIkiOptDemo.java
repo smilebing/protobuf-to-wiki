@@ -2,8 +2,7 @@ package com.hasaki;
 
 import com.hasaki.wiki.ConfluenceSoapService;
 import com.hasaki.wiki.ConfluenceSoapServiceServiceLocator;
-import com.hasaki.wiki.RemotePage;
-import com.hasaki.wiki.RemoteSearchResult;
+import com.hasaki.wiki.RemotePageSummary;
 
 import javax.xml.rpc.ServiceException;
 import java.io.FileInputStream;
@@ -61,12 +60,25 @@ public class WIkiOptDemo {
 //        String html = htmlCompressor.compress(document.outerHtml());
 //        page.setContent(html);
 
-        RemoteSearchResult[] search = confluenceSoapService.search(token, "PBFF 父课程上课接口", 10);
-        for (RemoteSearchResult remoteSearchResult : search) {
-            long id = remoteSearchResult.getId();
-            RemotePage page1 = confluenceSoapService.getPage(token, id);
-            System.out.println(page1.getContent());
-        }
+//        RemoteSearchResult[] search = confluenceSoapService.search(token, "PBFF 父课程上课接口", 10);
+//        for (RemoteSearchResult remoteSearchResult : search) {
+//            long id = remoteSearchResult.getId();
+//            RemotePage page1 = confluenceSoapService.getPage(token, id);
+//            System.out.println(page1.getContent());
+//        }
 //        confluenceSoapService.storePage(token, page);
+//        RemotePage remotePage = confluenceSoapService.getPage(token, "BS", "proto.coursesvc");
+        RemotePageSummary[] children = confluenceSoapService.getChildren(token, 134284498);
+        System.out.println(children);
+
+//        System.out.println(remotePage.getContent());
+
+//        RemotePage storePage = new RemotePage();
+//        storePage.setSpace("BS");
+//        storePage.setTitle("proto.coursesvc_tst");
+//        storePage.setParentId(remotePage.getId());
+//        storePage = confluenceSoapService.storePage(token,storePage);
+//        System.out.println(storePage.getUrl());
+
     }
 }
