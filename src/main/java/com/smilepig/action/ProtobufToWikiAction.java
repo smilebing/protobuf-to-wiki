@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.JBColor;
+import com.smilepig.bean.ProtoMethodBean;
 import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
 import com.smilepig.service.psi.PsiScanService;
@@ -66,7 +67,7 @@ public class ProtobufToWikiAction extends AnAction {
 
                 //搜索proto相关注解，url
                 PsiScanService psiScanService=new PsiScanService();
-                psiScanService.getControllerInfo(e);
+                ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(e);
 
 
                 //todo:zh 生成wiki
