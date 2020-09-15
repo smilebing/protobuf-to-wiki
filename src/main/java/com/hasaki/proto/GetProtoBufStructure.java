@@ -2,11 +2,8 @@ package com.hasaki.proto;
 
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.hasaki.bean.ProtoStructureBean;
-import cucumber.api.java.cs.A;
-import cucumber.api.java.it.Ma;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -4,6 +4,7 @@ import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
 import com.hasaki.bean.PageEditInfo;
 import com.hasaki.bean.ProtoStructureBean;
 import com.hasaki.common.AccountInfo;
+import com.hasaki.proto.GetProtoBufStructure;
 import com.hasaki.wiki.ConfluenceSoapService;
 import com.hasaki.wiki.ConfluenceSoapServiceServiceLocator;
 import com.hasaki.wiki.RemotePage;
@@ -17,6 +18,7 @@ import org.jsoup.select.Elements;
 import javax.xml.rpc.ServiceException;
 import java.io.FileInputStream;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -93,13 +95,13 @@ public class InterfacePageService {
             if("Request-Body".equals(parent.text())){
                 if(pageEditInfo.getRequestProto() != null){
                     //request对应的proto没有还需要先创建
-                    adaptCreateProto(pageEditInfo.getRequestProto(), "coursesvc");
+                    adaptCreateProto(pageEditInfo.getRequestProto(), pageEditInfo.getServerContext());
                     element.attr("ri:content-title",pageEditInfo.getRequestProto().getProtoTitle());
                 }
             }else if("Response".equals(parent.text())){
                 if(pageEditInfo.getResponseProto() != null){
                     //response对应的proto没有还需要先创建
-                    adaptCreateProto(pageEditInfo.getResponseProto(), "coursesvc");
+                    adaptCreateProto(pageEditInfo.getResponseProto(), pageEditInfo.getServerContext());
                     element.attr("ri:content-title",pageEditInfo.getResponseProto().getProtoTitle());
                 }
             }
@@ -145,14 +147,16 @@ public class InterfacePageService {
     }
 
 
-    public void createPageInfo(PageEditInfo pageEditInfo, Long parentId) throws RemoteException {
+    public String createPageInfo(PageEditInfo pageEditInfo, Long parentId) throws RemoteException {
         RemotePage page = new RemotePage();
         page.setParentId(parentId);
         page.setTitle(pageEditInfo.getTitle());
         String content = editPageContent(pageEditInfo, wikiTemplate);
         page.setContent(content);
         page.setSpace("BS");
-        confluenceSoapService.storePage(token, page);
+        RemotePage remotePage = confluenceSoapService.storePage(token, page);
+        System.out.println("接口wiki创建成功:"+ remotePage.getUrl());
+        return remotePage.getUrl();
     }
 
 
@@ -179,13 +183,20 @@ public class InterfacePageService {
             RemotePageSummary remotePageSummary = summaries.get(0);
             protoId = remotePageSummary.getId();
         }else{
-            //创建proto文件
-            RemotePage protoFilePage = new RemotePage();
-            protoFilePage.setSpace("BS");
-            protoFilePage.setTitle(protoFileName);
-            protoFilePage.setParentId(serverId);
-            protoFilePage = confluenceSoapService.storePage(token,protoFilePage);
-            protoId = protoFilePage.getId();
+            try {
+                RemotePage page = confluenceSoapService.getPage(token, "BS", protoStructureBean.getProtoTitle());
+                protoId = page.getId();
+            } catch (RemoteException e) {
+                //创建proto文件
+                RemotePage protoFilePage = new RemotePage();
+                protoFilePage.setSpace("BS");
+                protoFilePage.setTitle(protoFileName);
+                protoFilePage.setParentId(serverId);
+                protoFilePage = confluenceSoapService.storePage(token,protoFilePage);
+                protoId = protoFilePage.getId();
+                System.out.println("创建protoSource:" + protoFilePage.getTitle() + ",utl:" + protoFilePage.getUrl());
+            }
+
         }
 
         // 创建proto
@@ -208,10 +219,15 @@ public class InterfacePageService {
 
             protoPage.setContent(sb.toString());
         }
+        try {
+            RemotePage page = confluenceSoapService.getPage(token, protoPage.getSpace(), protoPage.getTitle());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            protoPage = confluenceSoapService.storePage(token, protoPage);
+            System.out.println("创建protoSource:" + protoPage.getTitle() + ",utl:" + protoPage.getUrl());
+        }
 
-        confluenceSoapService.storePage(token,protoPage);
     }
-
 
     public static void main(String[] args) throws Exception {
         Properties properties = new Properties();
@@ -220,49 +236,13 @@ public class InterfacePageService {
         AccountInfo.password = properties.getProperty("password");
 
         InterfacePageService interfacePageService = getInstance();
-//        PageEditInfo pageEditInfo = new PageEditInfo();
-//        pageEditInfo.setPageId(224494261L);
-//        pageEditInfo.setTitle("测试测试测试666");
-//        pageEditInfo.setRemark("测试测试666");
-//        pageEditInfo.setHost("host1111");
-//        pageEditInfo.setUrl("url111111");
-//        pageEditInfo.setMethod("gogogo");
-//        pageEditInfo.setHeader("header111111111");
-//        pageEditInfo.setRequestBodyTitle("orderservice_activity-OrderServiceActivityParticipateResponse");
-//        pageEditInfo.setResponseBodyTitle("resp-SimpleResponse");
-//        interfacePageService.createPageInfo(pageEditInfo,224494261L);
 
-        ProtoStructureBean first = new ProtoStructureBean();
-
-        ProtoStructureBean second1 = new ProtoStructureBean();
-        ProtoStructureBean second2 = new ProtoStructureBean();
-
-        ProtoStructureBean third1 = new ProtoStructureBean();
-        ProtoStructureBean third2 = new ProtoStructureBean();
-
-        third1.setProtoFileName("coursesvc_proto_test");
-        third1.setProtoTitle("coursesvc_proto_test-test31");
-        third1.setProtoStructure("source3111");
-        third2.setProtoFileName("coursesvc_proto_test");
-        third2.setProtoTitle("coursesvc_proto_test-test32");
-        third2.setProtoStructure("source3222");
-
-        second1.setProtoFileName("coursesvc_proto_test");
-        second1.setProtoTitle("coursesvc_proto_test-test21");
-        second1.setProtoStructure("source2111");
-        second1.setProtoStructureBeans(Arrays.asList(third1,third2));
-
-        second2.setProtoFileName("coursesvc_proto_test");
-        second2.setProtoTitle("coursesvc_proto_test-test22");
-        second2.setProtoStructure("source2222");
-
-        first.setProtoFileName("coursesvc_proto_test");
-        first.setProtoTitle("coursesvc_proto_test-test1");
-        first.setProtoStructure("source1111");
-        first.setProtoStructureBeans(Arrays.asList(second1,second2));
-
-        interfacePageService.createProto(first,"coursesvc");
+        List<String> classPathList = new ArrayList<>();
+        classPathList.add("com.qingqing.api.coursesvc.proto.CourseSvcCourseInfoProto.CourseSvcGroupOrderCourseIdsRequest");
+        classPathList.add("com.qingqing.api.coursesvc.proto.CourseSvcCourseInfoProto.CourseSvcGroupOrderCourseInfoResponse");
+        List<ProtoStructureBean> protoStructureBeanList= GetProtoBufStructure.getProto("D:\\develop\\maven\\maven-repository",classPathList);
+        for (ProtoStructureBean protoStructureBean : protoStructureBeanList) {
+            interfacePageService.createProto(protoStructureBean,"coursesvc");
+        }
     }
-
-
 }

@@ -6,6 +6,7 @@ package com.hasaki.bean;
  * @Author wenfucheng
  */
 public class PageEditInfo {
+    private String serverContext = "coursesvc";
 
     private Long pageId;
     //标题
@@ -97,5 +98,13 @@ public class PageEditInfo {
 
     public void setResponseProto(ProtoStructureBean responseProto) {
         this.responseProto = responseProto;
+    }
+
+    public String getServerContext() {
+        return serverContext;
+    }
+
+    public void setServerContext(String serverContext) {
+        this.serverContext = serverContext;
     }
 }
