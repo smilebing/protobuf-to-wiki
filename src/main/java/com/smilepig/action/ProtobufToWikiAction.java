@@ -1,5 +1,7 @@
 package com.smilepig.action;
 
+import com.hasaki.bean.PageEditInfo;
+import com.hasaki.proto.GetProtoBufStructure;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -70,6 +72,7 @@ public class ProtobufToWikiAction extends AnAction {
 
 
                 //todo:zh 生成wiki
+                PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
 
                 ApplicationManager.getApplication().runReadAction(new Runnable() {
                     @Override

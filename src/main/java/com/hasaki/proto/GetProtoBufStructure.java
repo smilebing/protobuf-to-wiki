@@ -1,9 +1,11 @@
 package com.hasaki.proto;
 
 
-
 import com.google.gson.Gson;
+import com.hasaki.bean.PageEditInfo;
 import com.hasaki.bean.ProtoStructureBean;
+import com.smilepig.bean.JavaTypeBean;
+import com.smilepig.bean.ProtoMethodBean;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +29,14 @@ import java.util.jar.JarFile;
  * @Date 2020/8/29 13:01
  **/
 public class GetProtoBufStructure {
-
+    /**
+     * 获取proto结构关系
+     *
+     * @param jarFiles
+     * @param protoNameList
+     * @param protoStructureBeans
+     * @throws Exception
+     */
     public static void getJarName(Set<String> jarFiles, Map<String, String> protoNameList, List<ProtoStructureBean> protoStructureBeans) throws Exception {
 
         for (String jarFile : jarFiles) {
@@ -147,45 +155,73 @@ public class GetProtoBufStructure {
     }
 
     public static void main(String[] args) {
-        List<String> classPathList = new ArrayList<>();
-        classPathList.add("com.qingqing.api.coursesvc.proto.CourseSvcCourseInfoProto.CourseSvcGroupOrderCourseIdsRequest");
-        classPathList.add("com.qingqing.api.coursesvc.proto.CourseSvcCourseInfoProto.CourseSvcGroupOrderCourseInfoResponse");
-        List<ProtoStructureBean> protoStructureBeanList= getProto("E:\\Maven\\repository",classPathList);
-        Gson gson=new Gson();
-        System.out.println(gson.toJson(protoStructureBeanList));
+        ProtoMethodBean protoMethodBean = new ProtoMethodBean();
+        JavaTypeBean requestInfo = new JavaTypeBean();
+        requestInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
+        requestInfo.setClassType("CourseSvcClassHourV2ArrangeFormalCourseRequest");
+        requestInfo.setRootClassName("CourseSvcArrangeCourseProto");
+        protoMethodBean.setRequestInfo(requestInfo);
+        JavaTypeBean responseInfo = new JavaTypeBean();
+
+        responseInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
+        responseInfo.setClassType("CourseSvcClassHourV2ArrangeFormalCourseResponse");
+        responseInfo.setRootClassName("CourseSvcArrangeCourseProto");
+        protoMethodBean.setResponseInfo(responseInfo);
+        PageEditInfo pageEditInfo = getProto(protoMethodBean);
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(pageEditInfo));
     }
 
     /**
      * 主方法，获取对应proto结构
-     * @param mavenPath  maven本地路径
-     * @param classPathList  需要的proto 全路径
+     *
+     * @param protoMethodBean request和Response包装类
      */
-    public static List<ProtoStructureBean> getProto(String mavenPath,List<String> classPathList) {
+    public static PageEditInfo getProto(ProtoMethodBean protoMethodBean) {
+
         try {
-            Map<String, String> protoMap = new HashMap<>();
-            Set<String> set = new HashSet<>();
-            for (String s : classPathList) {
-                getProjectPath(mavenPath, s, protoMap, set);
+            if(protoMethodBean==null){
+                throw new Exception("protoMethodBean is null");
             }
-            set.add(mavenPath + "\\com\\qingqing\\api\\protobuf-base\\1.0.0-SNAPSHOT");
+            if(protoMethodBean.getRequestInfo()==null||protoMethodBean.getResponseInfo()==null){
+                throw new Exception("request or response is null,protoMethodBean:"+new Gson().toJson(protoMethodBean));
+            }
+            JavaTypeBean javaTypeBean = protoMethodBean.getRequestInfo();
+
+            Map<String, String> protoMap = new HashMap<>();
             Set<String> jarFiles = new HashSet<>();
-            for (String s : set) {
-                jarFiles.add(getProtoFilePath(s));
+            //构造Request
+            jarFiles.add(javaTypeBean.getJarPath());
+            protoMap.put(javaTypeBean.getClassType(), javaTypeBean.getRootClassName());
+            //构造Response
+            jarFiles.add(protoMethodBean.getResponseInfo().getJarPath());
+            protoMap.put(protoMethodBean.getResponseInfo().getClassType(), protoMethodBean.getResponseInfo().getRootClassName());
+
+            String jarPath = javaTypeBean.getJarPath();
+            if (!jarPath.contains("protobuf-base") && !protoMethodBean.getRequestInfo().getJarPath().contains("protobuf-base")) {
+                jarFiles.add(getProtoFilePath(getProjectPath(jarPath)));
             }
             List<ProtoStructureBean> protoStructureBeansAll = new ArrayList<>();
+            //获取proto结构关系
             getJarName(jarFiles, protoMap, protoStructureBeansAll);
-            List<ProtoStructureBean> protoStructureBeans = new ArrayList<>();
+
+            PageEditInfo pageEditInfo = new PageEditInfo();
+            pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
             for (ProtoStructureBean protoStructureBean : protoStructureBeansAll) {
-                if ((protoStructureBean.getProtoName().endsWith("Response") || protoStructureBean.getProtoName().endsWith("Request")) && !protoStructureBean.getProtoName().equals("BaseResponse")) {
+                if ((protoStructureBean.getProtoName().endsWith("Response")) && !protoStructureBean.getProtoName().equals("BaseResponse")) {
                     setProtoStructureBeans(protoStructureBean, protoStructureBeansAll);
-                    protoStructureBeans.add(protoStructureBean);
+                    pageEditInfo.setResponseProto(protoStructureBean);
+                }
+                if (protoStructureBean.getProtoName().endsWith("Request")) {
+                    setProtoStructureBeans(protoStructureBean, protoStructureBeansAll);
+                    pageEditInfo.setRequestProto(protoStructureBean);
                 }
             }
-            return  protoStructureBeans;
+            return pageEditInfo;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return  null;
+        return null;
     }
 
     public static void setProtoStructureBeans(ProtoStructureBean protoStructureBean, List<ProtoStructureBean> protoStructureBeans) {
@@ -269,11 +305,7 @@ public class GetProtoBufStructure {
             return stringBuilder.toString();
         }
         if (line.contains("message")) {
-            for (String s : protoNameList) {
-                if (line.contains(s)) {
-                    protoNameList.remove(s);
-                }
-            }
+            protoNameList.removeIf(line::contains);
         }
         return "";
 
@@ -290,44 +322,30 @@ public class GetProtoBufStructure {
         String filepath = directoryPath;//file文件夹的目录
         File file = new File(filepath);//File类型可以是文件也可以是文件夹
         File[] fileList = file.listFiles();//将该目录下的所有文件放置在一个File类型的数组中
-       String strFile=null;//新建一个文件集合
+        String strFile = null;//新建一个文件集合
         for (int i = 0; i < fileList.length; i++) {
             if (fileList[i].isFile() && fileList[i].getName().endsWith("1.0.0-SNAPSHOT.jar")) {//判断是否为文件
-                strFile=fileList[i].toString();
+                strFile = fileList[i].toString();
             }
         }
-        if (strFile==null) {
+        if (strFile == null) {
             throw new Exception("目标架包不存在");
         }
         return strFile;
 
     }
 
-    public static void getProjectPath(String mavenPath, String protoPath, Map<String, String> protoMap, Set<String> jarFiles) throws Exception {
-        List<String> groupList = Arrays.asList(protoPath.split("\\."));
-        if (groupList.size() != 7) {
-            throw new Exception("所要获取的proto不合法");
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(mavenPath);
-        String key = null, value = null;
-        for (int i = 0; i < groupList.size(); i++) {
-            if (i < 3) {
-                stringBuilder.append("\\");
-                stringBuilder.append(groupList.get(i));
-            } else if (i == 3) {
-                stringBuilder.append("\\protobuf-");
-                stringBuilder.append(groupList.get(i));
-                stringBuilder.append("\\1.0.0-SNAPSHOT");
-            } else if (i == 5) {
-                value = groupList.get(i);
-            } else if (i == 6) {
-                key = groupList.get(i);
-            }
-        }
-        jarFiles.add(stringBuilder.toString());
-        protoMap.put(key, value);
+    public static String getProjectPath(String jarPath) throws Exception {
 
+        int indexStart = jarPath.indexOf("protobuf-");
+        int indexEnd = jarPath.indexOf("1.0.0-SNAPSHOT");
+        if (indexStart < 0 || indexEnd < 0 || indexEnd <= indexStart) {
+            throw new Exception("目标架包不合法");
+        }
+        String jarDirectory = jarPath.substring(0, indexEnd + 14);
+        StringBuilder stringBuilder = new StringBuilder(jarDirectory);
+        stringBuilder.replace(indexStart + 9, indexEnd - 1, "base");
+        return stringBuilder.toString();
     }
 
 }

@@ -240,9 +240,9 @@ public class InterfacePageService {
         List<String> classPathList = new ArrayList<>();
         classPathList.add("com.qingqing.api.coursesvc.proto.CourseSvcCourseInfoProto.CourseSvcGroupOrderCourseIdsRequest");
         classPathList.add("com.qingqing.api.coursesvc.proto.CourseSvcCourseInfoProto.CourseSvcGroupOrderCourseInfoResponse");
-        List<ProtoStructureBean> protoStructureBeanList= GetProtoBufStructure.getProto("D:\\develop\\maven\\maven-repository",classPathList);
+      /*  List<ProtoStructureBean> protoStructureBeanList= GetProtoBufStructure.getProto(new ProtoMethodBean());
         for (ProtoStructureBean protoStructureBean : protoStructureBeanList) {
             interfacePageService.createProto(protoStructureBean,"coursesvc");
-        }
+        }*/
     }
 }
