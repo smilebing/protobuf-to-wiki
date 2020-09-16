@@ -1,39 +1,40 @@
 <idea-plugin>
-  <id>com.hasaki</id>
-  <name>protobuf-to-wiki</name>
-  <version>1.0</version>
-  <vendor email="iblandshot@gmailcom" url="http://www.zhudahe.cn">smilepig</vendor>
+    <id>com.hasaki</id>
+    <name>protobuf-to-wiki</name>
+    <version>1.0</version>
+    <vendor email="iblandshot@gmailcom" url="http://www.zhudahe.cn">smilepig</vendor>
 
-  <description><![CDATA[
+    <description><![CDATA[
       把生成protobuf对应的接口文档,轻轻内部使用，暂时没有适配其他公司<br>
     ]]></description>
 
-  <change-notes><![CDATA[
+    <change-notes><![CDATA[
       v1.0 <br>
     ]]>
-  </change-notes>
+    </change-notes>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="173.0"/>
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="173.0"/>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-       on how to target different products -->
-  <!-- uncomment to enable plugin in all products
-  <depends>com.intellij.modules.lang</depends>
-  -->
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
 
-  <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="com.smilepig.provider.ProtoToWikiLineMarkerProvider"/>
+    </extensions>
 
-  <actions>
+    <actions>
 
-    <action id="QQPlugin.ProtoToWiki" class="com.smilepig.action.ProtobufToWikiAction" text="生成wiki接口"
-            description="自动生成protobuf对应的接口文档">
-      <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="Generate"/>
-      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-    </action>
+        <action id="QQPlugin.ProtoToWiki" class="com.smilepig.action.ProtobufToWikiAction" text="生成wiki接口"
+                description="自动生成protobuf对应的接口文档">
+            <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="Generate"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
 
-  </actions>
+    </actions>
 
 </idea-plugin>
