@@ -152,7 +152,7 @@ public class PsiScanService {
                         protoMethodBean.setMethodUrl(detachedValue.getText().replaceAll("\"", ""));
                     }
                     if (attribute.getAttributeName().equals("method")) {
-                        protoMethodBean.setMethod(detachedValue.getText());
+                        protoMethodBean.setRequestMethod(detachedValue.getText());
                     }
                 }
 

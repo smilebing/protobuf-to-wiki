@@ -14,7 +14,7 @@ public class ProtoMethodBean {
 
     private String wikiUrl;
 
-    private String method;
+    private String requestMethod;
 
     public JavaTypeBean getRequestInfo() {
         return requestInfo;
@@ -56,11 +56,11 @@ public class ProtoMethodBean {
         this.wikiUrl = wikiUrl;
     }
 
-    public String getMethod() {
-        return method;
+    public String getRequestMethod() {
+        return requestMethod;
     }
 
-    public void setMethod(String method) {
-        this.method = method;
+    public void setRequestMethod(String requestMethod) {
+        this.requestMethod = requestMethod;
     }
 }
