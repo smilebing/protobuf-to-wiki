@@ -6,6 +6,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
@@ -14,6 +16,7 @@ import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.PsiTypeElement;
+import com.intellij.psi.impl.source.tree.java.PsiNameValuePairImpl;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -47,6 +50,35 @@ public class PsiScanService {
         PsiElement element = psiFile.findElementAt(offset);
 
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+        if (psiClass == null) {
+            return null;
+        }
+
+        PsiAnnotation[] classAnnotations = psiClass.getAnnotations();
+        for (PsiAnnotation classAnnotation : classAnnotations) {
+
+            PsiJavaCodeReferenceElement nameReferenceElement = classAnnotation.getNameReferenceElement();
+            String text = nameReferenceElement.getText();
+            if (text == null) {
+                continue;
+            }
+            if (!REQUEST_MAPPING_PREFIX.equals(text)) {
+                continue;
+            }
+
+            List<JvmAnnotationAttribute> attributes = classAnnotation.getAttributes();
+            for (JvmAnnotationAttribute attribute : attributes) {
+                PsiAnnotationMemberValue detachedValue = ((PsiNameValuePairImpl) attribute).getDetachedValue();
+                if (detachedValue == null) {
+                    continue;
+                }
+                if (attribute.getAttributeName().equals("value")) {
+                    protoMethodBean.setControllerUrl(detachedValue.getText().replaceAll("\"", ""));
+                }
+            }
+        }
+
 
         if (containingMethod == null) {
             return null;
@@ -62,6 +94,7 @@ public class PsiScanService {
                         return null;
                     }
                     String wikiUrl = tag.getValueElement().getText();
+                    protoMethodBean.setWikiUrl(wikiUrl);
                     logger.info("wiki link:{}", wikiUrl);
                 }
             }
@@ -111,11 +144,15 @@ public class PsiScanService {
                 requestMappingAnno = annotation;
                 List<JvmAnnotationAttribute> attributes = requestMappingAnno.getAttributes();
                 for (JvmAnnotationAttribute attribute : attributes) {
+                    PsiAnnotationMemberValue detachedValue = ((PsiNameValuePairImpl) attribute).getDetachedValue();
+                    if (detachedValue == null) {
+                        continue;
+                    }
                     if (attribute.getAttributeName().equals("value")) {
-                        protoMethodBean.setMethodUrl(attribute.getAttributeValue().toString());
+                        protoMethodBean.setMethodUrl(detachedValue.getText().replaceAll("\"", ""));
                     }
                     if (attribute.getAttributeName().equals("method")) {
-                        protoMethodBean.setMethod(attribute.getAttributeValue().toString());
+                        protoMethodBean.setMethod(detachedValue.getText());
                     }
                 }
 
