@@ -6,6 +6,7 @@ package com.smilepig.bean;
 public class JavaTypeBean {
     private String classType;
     private String jarPath;
+    private String packageName;
 
     public String getClassType() {
         return classType;
@@ -23,11 +24,20 @@ public class JavaTypeBean {
         this.jarPath = jarPath;
     }
 
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
     @Override
     public String toString() {
         return "JavaTypeBean{" +
                 "classType='" + classType + '\'' +
                 ", jarPath='" + jarPath + '\'' +
+                ", packageName='" + packageName + '\'' +
                 '}';
     }
 }

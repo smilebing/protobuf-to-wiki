@@ -1,7 +1,5 @@
 package com.smilepig.service.psi;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.OrderEntry;
@@ -30,8 +28,14 @@ public class PsiJarService {
             return null;
         }
 
+
         PsiClass psiClass = PsiUtil.resolveClassInType(element.getType());
-        assert psiClass != null;
+        if (psiClass == null) {
+            return null;
+        }
+
+        String packageName = PsiUtil.getPackageName(psiClass);
+
         PsiFile psiFile = psiClass.getContainingFile();
         if (psiFile == null) {
             return null;
@@ -56,6 +60,7 @@ public class PsiJarService {
                     JavaTypeBean javaTypeBean = new JavaTypeBean();
                     javaTypeBean.setClassType(element.getText());
                     javaTypeBean.setJarPath(jar.getPath());
+                    javaTypeBean.setPackageName(packageName);
                     return javaTypeBean;
                 }
             }

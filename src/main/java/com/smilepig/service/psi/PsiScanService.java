@@ -40,6 +40,11 @@ public class PsiScanService {
     public ProtoMethodBean getControllerInfo(AnActionEvent anActionEvent) {
         ProtoMethodBean protoMethodBean = new ProtoMethodBean();
 
+        Project project = anActionEvent.getProject();
+        if (project == null) {
+            return null;
+        }
+
         Editor editor = anActionEvent.getData(CommonDataKeys.EDITOR);
         PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
         if (editor == null || psiFile == null) {
@@ -100,10 +105,7 @@ public class PsiScanService {
             }
         }
 
-        Project project = anActionEvent.getProject();
-        if (project == null) {
-            return null;
-        }
+
         PsiTypeElement responseTypeElement = containingMethod.getReturnTypeElement();
         if (responseTypeElement == null) {
             return null;
@@ -169,7 +171,6 @@ public class PsiScanService {
         }
 
         return protoMethodBean;
-
 
     }
 }
