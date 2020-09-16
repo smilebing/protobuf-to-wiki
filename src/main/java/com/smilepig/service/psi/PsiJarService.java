@@ -1,5 +1,6 @@
 package com.smilepig.service.psi;
 
+import com.intellij.lang.java.actions.PsiUtilKt;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.OrderEntry;
@@ -11,7 +12,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiTypeElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
+import com.intellij.psi.util.PsiUtilBase;
+import com.intellij.psi.util.PsiUtilCore;
 import com.smilepig.bean.JavaTypeBean;
 
 /**
@@ -34,37 +38,23 @@ public class PsiJarService {
             return null;
         }
 
-        String packageName = PsiUtil.getPackageName(psiClass);
+        VirtualFile jarFile = PsiUtil.getJarFile(psiClass);
+        if (jarFile == null) {
+            return null;
+        }
 
-        PsiFile psiFile = psiClass.getContainingFile();
-        if (psiFile == null) {
+        String packageName = PsiUtil.getPackageName(psiClass);
+        PsiClass topmostParentOfType = PsiTreeUtil.getTopmostParentOfType(psiClass, PsiClass.class);
+        if (topmostParentOfType == null) {
             return null;
         }
-        VirtualFile virtualFile = psiFile.getVirtualFile();
-        if (virtualFile == null) {
-            return null;
-        }
-        final ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
-        for (OrderEntry orderEntry : fileIndex.getOrderEntriesForFile(virtualFile)) {
-            if (orderEntry instanceof LibraryOrderEntry) {
-                final LibraryOrderEntry libraryEntry = (LibraryOrderEntry) orderEntry;
-                final Library library = libraryEntry.getLibrary();
-                if (library == null) {
-                    continue;
-                }
-                VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
-                if (files.length == 0) {
-                    continue;
-                }
-                for (VirtualFile jar : files) {
-                    JavaTypeBean javaTypeBean = new JavaTypeBean();
-                    javaTypeBean.setClassType(element.getText());
-                    javaTypeBean.setJarPath(jar.getPath());
-                    javaTypeBean.setPackageName(packageName);
-                    return javaTypeBean;
-                }
-            }
-        }
-        return null;
+
+        JavaTypeBean javaTypeBean = new JavaTypeBean();
+        javaTypeBean.setClassType(element.getText());
+        javaTypeBean.setJarPath(jarFile.getPath());
+        javaTypeBean.setPackageName(packageName);
+        javaTypeBean.setRootClassName(topmostParentOfType.getName());
+        return javaTypeBean;
+
     }
 }
