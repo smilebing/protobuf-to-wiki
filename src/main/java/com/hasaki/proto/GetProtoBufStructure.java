@@ -48,20 +48,29 @@ public class GetProtoBufStructure {
                 //测试此枚举是否包含更多的元素
                 while (enumFiles.hasMoreElements() && protoNameList.size() > 0) {
                     entry = enumFiles.nextElement();
+                    //只获取proto后缀的文件
                     if (!entry.getName().contains("META-INF") || !entry.getName().contains("com")) {
                         String classFullName = entry.getName();
                         if (classFullName.endsWith(".proto")) {
+                            //文件名称
                             String fileName = classFullName.substring(0, classFullName.indexOf(".proto"));
+                            //获取文件流
                             InputStream input = jar.getInputStream(entry);
                             InputStreamReader isr = new InputStreamReader(input);
                             BufferedReader reader = new BufferedReader(isr);
+                            //
                             String line;
+                            //对应java类的名称
                             String classname = "";
-                            boolean i = false;
+                            //是否匹配到方法名
+                            boolean isMatchMethod = false;
                             List<String> stringLine = new ArrayList<>();
                             StringBuilder stringBuilder = new StringBuilder();
+                            //括号匹配原则，当左右括号相等时，停止读取
                             int bracketsIndex = 0;
+                            //记录子方法名
                             List<String> sonProto = new ArrayList<>();
+                            //记录此文件导入的所有包
                             List<String> importList = new ArrayList<>();
                             importList.add(fileName);
                             while ((line = reader.readLine()) != null) {
@@ -71,7 +80,8 @@ public class GetProtoBufStructure {
                                 if (isImport(line, "import")) {
                                     importList.add(line.substring(line.lastIndexOf("/") + 1, line.indexOf(".proto")));
                                 }
-                                if (i) {
+                                //上一行匹配到方法后，往下开始写入结构
+                                if (isMatchMethod) {
                                     if (line.contains("}")) {
                                         bracketsIndex--;
                                     }
@@ -91,7 +101,7 @@ public class GetProtoBufStructure {
                                         }
                                         sonProto = new ArrayList<>();
                                         stringBuilder = new StringBuilder();
-                                        i = false;
+                                        isMatchMethod = false;
                                     }
                                 }
                                 Iterator<String> it = protoNameList.keySet().iterator();
@@ -124,7 +134,7 @@ public class GetProtoBufStructure {
 
                                         stringBuilder.append(stringLine.get(stringLine.size() - 1) + "\n");
                                         stringBuilder.append(line + "\n");
-                                        i = true;
+                                        isMatchMethod = true;
                                         if (line.contains("{")) {
                                             bracketsIndex++;
                                         }
@@ -132,15 +142,9 @@ public class GetProtoBufStructure {
                                         break;
                                     }
                                 }
-                              /*  for (String s : protoNameList) {
-
-
-                                }*/
                                 stringLine.add(line);
                             }
                             reader.close();
-                            //  System.out.println(stringBuilder.toString());
-                            // System.out.println("*****************************");
                         }
                     }
                 }
@@ -207,12 +211,18 @@ public class GetProtoBufStructure {
 
             PageEditInfo pageEditInfo = new PageEditInfo();
             pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
+            pageEditInfo.setUrl(protoMethodBean.getApplicationContext()+protoMethodBean.getControllerUrl()+protoMethodBean.getMethodUrl());
+            pageEditInfo.setTitle(protoMethodBean.getWikiTitle());
+            pageEditInfo.setHeader("Content-Type: application/x-protobuf");
+            pageEditInfo.setHost("http://api.changingedu.com");
             for (ProtoStructureBean protoStructureBean : protoStructureBeansAll) {
                 if ((protoStructureBean.getProtoName().endsWith("Response")) && !protoStructureBean.getProtoName().equals("BaseResponse")) {
+                    //递归构造responseProto的子结构
                     setProtoStructureBeans(protoStructureBean, protoStructureBeansAll);
                     pageEditInfo.setResponseProto(protoStructureBean);
                 }
                 if (protoStructureBean.getProtoName().endsWith("Request")) {
+                    //递归构造requestProto的子结构
                     setProtoStructureBeans(protoStructureBean, protoStructureBeansAll);
                     pageEditInfo.setRequestProto(protoStructureBean);
                 }
@@ -224,6 +234,11 @@ public class GetProtoBufStructure {
         return null;
     }
 
+    /**
+     * 递归构造proto的子结构
+     * @param protoStructureBean
+     * @param protoStructureBeans
+     */
     public static void setProtoStructureBeans(ProtoStructureBean protoStructureBean, List<ProtoStructureBean> protoStructureBeans) {
 
         if (protoStructureBean.getSubProtoTitles() != null && protoStructureBean.getSubProtoTitles().size() > 0) {
@@ -247,6 +262,12 @@ public class GetProtoBufStructure {
 
     }
 
+    /**
+     * 匹配是否是特定的方法
+     * @param line
+     * @param s
+     * @return
+     */
     public static boolean isLine(String line, String s) {
         if (!line.contains(s)) {
             return false;
@@ -262,7 +283,12 @@ public class GetProtoBufStructure {
         }
         return true;
     }
-
+    /**
+     * 匹配某一行是否是导入的包
+     * @param line
+     * @param s
+     * @return
+     */
     public static boolean isImport(String line, String s) {
         if (line.indexOf(s) != 0) {
             return false;
@@ -274,7 +300,12 @@ public class GetProtoBufStructure {
         }
         return true;
     }
-
+    /**
+     * 获取结构体里面的子方法
+     * @param line
+     * @param protoNameList
+     * @return
+     */
     public static String sonProto(String line, List<String> protoNameList) {
         int index = line.indexOf("optional");
         if (index == -1) {
@@ -335,6 +366,12 @@ public class GetProtoBufStructure {
 
     }
 
+    /**
+     * 获取base架包所在的目录
+     * @param jarPath
+     * @return
+     * @throws Exception
+     */
     public static String getProjectPath(String jarPath) throws Exception {
 
         int indexStart = jarPath.indexOf("protobuf-");

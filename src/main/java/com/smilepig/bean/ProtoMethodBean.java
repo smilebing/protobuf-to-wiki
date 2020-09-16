@@ -18,6 +18,8 @@ public class ProtoMethodBean {
 
     private String applicationContext;
 
+    private String wikiTitle;//wiki±ÍÃ‚
+
     public JavaTypeBean getRequestInfo() {
         return requestInfo;
     }
@@ -72,5 +74,13 @@ public class ProtoMethodBean {
 
     public void setApplicationContext(String applicationContext) {
         this.applicationContext = applicationContext;
+    }
+
+    public String getWikiTitle() {
+        return wikiTitle;
+    }
+
+    public void setWikiTitle(String wikiTitle) {
+        this.wikiTitle = wikiTitle;
     }
 }
