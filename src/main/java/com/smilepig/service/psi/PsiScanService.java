@@ -19,13 +19,20 @@ import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.impl.source.tree.java.PsiNameValuePairImpl;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.smilepig.bean.JavaTypeBean;
 import com.smilepig.bean.ProtoMethodBean;
+import com.smilepig.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by zhuhe on 2020/9/3
@@ -42,6 +49,42 @@ public class PsiScanService {
 
         Project project = anActionEvent.getProject();
         if (project == null) {
+            return null;
+        }
+
+        PsiMethod[] customizes = PsiShortNamesCache.getInstance(project)
+                .getMethodsByName("customize", GlobalSearchScope.projectScope(project));
+
+        for (PsiMethod customize : customizes) {
+            PsiParameter[] parameters = customize.getParameterList().getParameters();
+            if (parameters.length != 1) {
+                continue;
+            }
+            PsiParameter parameter = parameters[0];
+            if (!parameter.getType()
+                    .getCanonicalText()
+                    .equals("org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory")) {
+                continue;
+            }
+
+            String text = customize.getText();
+
+            // 按指定模式在字符串查找
+            String pattern = "setContextPath(.*?);";
+            // 创建 Pattern 对象
+            Pattern r = Pattern.compile(pattern);
+
+            // 现在创建 matcher 对象
+            Matcher m = r.matcher(text);
+            if (m.find()) {
+                String context = m.group(1);
+                context = context.replaceAll("\"", "").replaceAll("\\(", "").replaceAll("\\)", "");
+                protoMethodBean.setApplicationContext(context);
+                break;
+            }
+        }
+
+        if (protoMethodBean.getApplicationContext() == null) {
             return null;
         }
 

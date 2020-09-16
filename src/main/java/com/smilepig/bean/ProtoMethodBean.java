@@ -16,6 +16,8 @@ public class ProtoMethodBean {
 
     private String requestMethod;
 
+    private String applicationContext;
+
     public JavaTypeBean getRequestInfo() {
         return requestInfo;
     }
@@ -62,5 +64,13 @@ public class ProtoMethodBean {
 
     public void setRequestMethod(String requestMethod) {
         this.requestMethod = requestMethod;
+    }
+
+    public String getApplicationContext() {
+        return applicationContext;
+    }
+
+    public void setApplicationContext(String applicationContext) {
+        this.applicationContext = applicationContext;
     }
 }

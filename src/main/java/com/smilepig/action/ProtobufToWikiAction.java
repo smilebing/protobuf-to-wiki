@@ -12,7 +12,19 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiParameterList;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiShortNamesCache;
+import com.intellij.psi.search.searches.OverridingMethodsSearch;
+import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.PsiUtil;
 import com.intellij.ui.JBColor;
+import com.intellij.util.Query;
 import com.smilepig.bean.ProtoMethodBean;
 import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
@@ -34,6 +46,26 @@ public class ProtobufToWikiAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         Project project = e.getData(PlatformDataKeys.PROJECT);
+        if (project == null) {
+            return;
+        }
+
+//        PsiClass[] WebServerFactoryCustomizers = PsiShortNamesCache.getInstance(project)
+//                .getClassesByName("SpringApplicationBase", GlobalSearchScope.everythingScope(project));
+
+//        PsiClass applicationClass=null;
+//        for (PsiClass webServerFactoryCustomizer : WebServerFactoryCustomizers) {
+//            for (PsiMethod method : webServerFactoryCustomizer.getAllMethods()) {
+//                if (method.getName().equals("customize")) {
+//
+//                    Query<PsiMethod> search = OverridingMethodsSearch.search(method);
+//                    for (PsiMethod psiMethod : search) {
+//                        System.out.println(psiMethod.getName());
+//                    }
+//                }
+//            }
+//        }
+
 
         Editor editor = e.getData(PlatformDataKeys.EDITOR);
         assert editor != null;
@@ -50,7 +82,7 @@ public class ProtobufToWikiAction extends AnAction {
         //获取授权service
         UserAuthService userAuthService = new UserAuthService();
         //判断用户授权是否有效
-        if(!userAuthService.isAuthed()){
+        if (!userAuthService.isAuthed()) {
             //登陆
             LoginDialog loginDialog = new LoginDialog(true);
             loginDialog.show();
@@ -65,7 +97,7 @@ public class ProtobufToWikiAction extends AnAction {
 
 
                 //搜索proto相关注解，url
-                PsiScanService psiScanService=new PsiScanService();
+                PsiScanService psiScanService = new PsiScanService();
                 ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(e);
 
 
