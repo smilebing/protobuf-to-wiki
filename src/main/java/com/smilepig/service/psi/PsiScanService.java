@@ -41,13 +41,9 @@ public class PsiScanService {
     public final static String PROTO_REQUEST_PREFIX = "@ProtoRequestBody";
     public final static String REQUEST_MAPPING_PREFIX = "RequestMapping";
 
-    public ProtoMethodBean getControllerInfo(AnActionEvent anActionEvent) {
-        ProtoMethodBean protoMethodBean = new ProtoMethodBean();
+    public ProtoMethodBean getControllerInfo(Project project, PsiElement element) {
 
-        Project project = anActionEvent.getProject();
-        if (project == null) {
-            return null;
-        }
+        ProtoMethodBean protoMethodBean = new ProtoMethodBean();
 
         PsiMethod[] customizes = PsiShortNamesCache.getInstance(project)
                 .getMethodsByName("customize", GlobalSearchScope.projectScope(project));
@@ -85,14 +81,6 @@ public class PsiScanService {
             return null;
         }
 
-        Editor editor = anActionEvent.getData(CommonDataKeys.EDITOR);
-        PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
-        if (editor == null || psiFile == null) {
-            return null;
-        }
-        int offset = editor.getCaretModel().getOffset();
-
-        PsiElement element = psiFile.findElementAt(offset);
 
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
         PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
@@ -220,4 +208,20 @@ public class PsiScanService {
         return protoMethodBean;
 
     }
+
+
+//    public ProtoMethodBean getControllerInfo(AnActionEvent anActionEvent) {
+//        Editor editor = anActionEvent.getData(CommonDataKeys.EDITOR);
+//        PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
+//        Project project = anActionEvent.getProject();
+//
+//        if (editor == null || psiFile == null) {
+//            return null;
+//        }
+//        int offset = editor.getCaretModel().getOffset();
+//
+//        PsiElement element = psiFile.findElementAt(offset);
+//
+//        return getControllerInfo(element);
+//    }
 }

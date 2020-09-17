@@ -4,16 +4,22 @@ import com.hasaki.bean.PageEditInfo;
 import com.hasaki.proto.GetProtoBufStructure;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
+import com.intellij.openapi.editor.ex.util.EditorUtil;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.ui.JBColor;
 import com.smilepig.bean.ProtoMethodBean;
 import com.smilepig.notify.LoginDialog;
@@ -41,6 +47,24 @@ public class ProtobufToWikiAction extends AnAction {
         }
 
         Editor editor = e.getData(PlatformDataKeys.EDITOR);
+        if (editor == null) {
+            return;
+        }
+
+        PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
+        if (psiFile == null) {
+            return;
+        }
+
+        int offset = editor.getCaretModel().getOffset();
+        PsiElement element = psiFile.findElementAt(offset);
+        actionFromIconClick(element);
+    }
+
+    public void actionFromIconClick(PsiElement element) {
+        Project project = element.getProject();
+        Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+
         assert editor != null;
         SelectionModel selectionModel = editor.getSelectionModel();
         logger.info("selectionModel:{}", selectionModel);
@@ -71,11 +95,15 @@ public class ProtobufToWikiAction extends AnAction {
 
                 //搜索proto相关注解，url
                 PsiScanService psiScanService = new PsiScanService();
-                ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(e);
+                ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(project, element);
 
 
                 //todo:zh 生成wiki
-                PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
+                try {
+                    PageEditInfo pageEditInfo = GetProtoBufStructure.getProto(controllerInfo);
+                }catch (Exception e){
+                    System.out.println("get page edit info error");
+                }
 
                 ApplicationManager.getApplication().runReadAction(new Runnable() {
                     @Override
@@ -101,8 +129,6 @@ public class ProtobufToWikiAction extends AnAction {
 
                 //发送通知
                 SimpleNotification.notify(project, "<a href='http://www.baidu.com'>link</a>");
-
-
             }
         }
     }
