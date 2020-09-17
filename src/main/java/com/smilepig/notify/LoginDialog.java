@@ -40,7 +40,7 @@ public class LoginDialog extends DialogWrapper {
         jPanel.add(jTextFieldPwd);
         jPanel.add(jCheckBox);
 
-        setOKButtonText("登陆");
+        setOKButtonText("登录");
         setCancelButtonText("取消");
 
         return jPanel;

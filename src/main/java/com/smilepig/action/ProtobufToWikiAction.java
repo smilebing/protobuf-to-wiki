@@ -21,16 +21,12 @@ import com.smilepig.bean.ProtoMethodBean;
 import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
 import com.smilepig.service.psi.PsiScanService;
-import com.smilepig.service.userauth.UserAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.rmi.RemoteException;
-import java.util.Properties;
 
 /**
  * Created by zhuhe on 2020/8/28
@@ -58,82 +54,77 @@ public class ProtobufToWikiAction extends AnAction {
             return;
         }
 
-        //获取授权service
-        UserAuthService userAuthService = new UserAuthService();
-        //判断用户授权是否有效
-        if (!userAuthService.isAuthed()) {
-            //登陆
+        InterfacePageService pageService;
+        //todo 如果本地有用户名密码, 帮用户登录, 下面流程跳过
+
+        while (true){
+            //登录
             LoginDialog loginDialog = new LoginDialog(true);
             loginDialog.show();
             if (loginDialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
                 String name = loginDialog.getjTextFieldName().getText().trim();
                 String pwd = loginDialog.getjTextFieldPwd().getText().trim();
                 boolean selected = loginDialog.getjCheckBox().isSelected();
-                logger.debug("登陆,name:{},pwd:{},selected:{}", name, pwd, selected);
-                Properties properties = new Properties();
-                try {
-                    properties.load(new FileInputStream("D:\\account.properties"));
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                String username = properties.getProperty("username");
-                String password = properties.getProperty("password");
+                logger.debug("登录,name:{},pwd:{},selected:{}", name, pwd, selected);
 
-
-                InterfacePageService pageService = null;
                 try {
-                    pageService = InterfacePageService.getInstance(username, password);
+                    pageService = InterfacePageService.getInstance(name, pwd);
+                    if(selected){
+                        //todo 保存用户名密码到本地
+                    }
+                    break;
                 } catch (Exception ex) {
-                    //登录失败..
-                    throw new RuntimeException(ex.getMessage());
-                }
-
-                //todo:zh 登陆
-                Messages.showMessageDialog(project, "登陆成功", "提示", Messages.getInformationIcon());
-
-                //搜索proto相关注解，url
-                PsiScanService psiScanService = new PsiScanService();
-                ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(e);
-
-                controllerInfo.setWikiTitle("测试测试测试121321312");
-                //todo:zh 生成wiki
-                PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
-                RemotePage remotePage;
-                try {
-                    remotePage = pageService.createPageInfo(pageEditInfo, 134284818L);
-                } catch (RemoteException ex) {
                     ex.printStackTrace();
-                    //生成wiki失败
-                    throw new RuntimeException();
+                    Messages.showMessageDialog(project, "用户名或密码错误", "提示", Messages.getInformationIcon());
                 }
-
-                ApplicationManager.getApplication().runReadAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        System.out.println("run in other thread");
-                    }
-                });
-
-
-                //弹窗通知wiki生成成功
-                JBPopupFactory factory = JBPopupFactory.getInstance();
-                BalloonBuilder htmlTextBalloonBuilder = factory.createHtmlTextBalloonBuilder("内容", null, JBColor.PINK, new HyperlinkListener() {
-                    @Override
-                    public void hyperlinkUpdate(HyperlinkEvent e) {
-                        System.out.println("hyper link");
-                    }
-                });
-
-                htmlTextBalloonBuilder.setFadeoutTime(5 * 1000)
-                        .createBalloon()
-                        .show(factory.guessBestPopupLocation(editor), Position.below);
-
-
-                //发送通知
-                SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>",remotePage.getUrl(), remotePage.getTitle()));
-
-
+            }
+            if(loginDialog.getExitCode() == DialogWrapper.CANCEL_EXIT_CODE){
+                return;
             }
         }
+
+        Messages.showMessageDialog(project, "登录成功", "提示", Messages.getInformationIcon());
+
+
+        //搜索proto相关注解，url
+        PsiScanService psiScanService = new PsiScanService();
+        ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(e);
+
+        controllerInfo.setWikiTitle("测试测试测试121321312");
+        //生成wiki
+        PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
+        RemotePage remotePage;
+        try {
+            remotePage = pageService.createPageInfo(pageEditInfo, 134284818L);
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
+            //生成wiki失败
+            throw new RuntimeException();
+        }
+
+        ApplicationManager.getApplication().runReadAction(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("run in other thread");
+            }
+        });
+
+
+        //弹窗通知wiki生成成功
+        JBPopupFactory factory = JBPopupFactory.getInstance();
+        BalloonBuilder htmlTextBalloonBuilder = factory.createHtmlTextBalloonBuilder(remotePage.getUrl(), null, JBColor.PINK, new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                System.out.println("hyper link");
+            }
+        });
+
+        htmlTextBalloonBuilder.setFadeoutTime(5 * 1000)
+                .createBalloon()
+                .show(factory.guessBestPopupLocation(editor), Position.below);
+
+
+        //发送通知
+        SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>",remotePage.getUrl(), remotePage.getTitle()));
     }
 }

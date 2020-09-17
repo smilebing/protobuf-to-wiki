@@ -210,6 +210,7 @@ public class GetProtoBufStructure {
             getJarName(jarFiles, protoMap, protoStructureBeansAll);
 
             PageEditInfo pageEditInfo = new PageEditInfo();
+            pageEditInfo.setApplicationContext(protoMethodBean.getApplicationContext());
             pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
             pageEditInfo.setUrl(protoMethodBean.getApplicationContext()+protoMethodBean.getControllerUrl()+protoMethodBean.getMethodUrl());
             pageEditInfo.setTitle(protoMethodBean.getWikiTitle());
