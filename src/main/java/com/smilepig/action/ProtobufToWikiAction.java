@@ -110,9 +110,9 @@ public class ProtobufToWikiAction extends AnAction {
         Messages.showMessageDialog(project, "登录成功", "提示", Messages.getInformationIcon());
 
 
-                //搜索proto相关注解，url
-                PsiScanService psiScanService = new PsiScanService();
-                ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(project, element);
+        //搜索proto相关注解，url
+        PsiScanService psiScanService = new PsiScanService();
+        ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(project, element);
 
 
         //生成wiki
