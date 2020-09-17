@@ -38,8 +38,8 @@ public class PsiScanService {
 
     private final static Logger logger = LoggerFactory.getLogger(PsiScanService.class);
 
-    private final static String PROTO_REQUEST_PREFIX = "@ProtoRequestBody";
-    private final static String REQUEST_MAPPING_PREFIX = "RequestMapping";
+    public final static String PROTO_REQUEST_PREFIX = "@ProtoRequestBody";
+    public final static String REQUEST_MAPPING_PREFIX = "RequestMapping";
 
     public ProtoMethodBean getControllerInfo(AnActionEvent anActionEvent) {
         ProtoMethodBean protoMethodBean = new ProtoMethodBean();
@@ -75,7 +75,7 @@ public class PsiScanService {
             Matcher m = r.matcher(text);
             if (m.find()) {
                 String context = m.group(1);
-                context = context.replaceAll("\"", "").replaceAll("\\(", "").replaceAll("\\)", "");
+                context = context.replaceAll("/", "").replaceAll("\"", "").replaceAll("\\(", "").replaceAll("\\)", "");
                 protoMethodBean.setApplicationContext(context);
                 break;
             }
@@ -140,7 +140,14 @@ public class PsiScanService {
                     }
                     String wikiUrl = tag.getValueElement().getText();
                     protoMethodBean.setWikiUrl(wikiUrl);
-                    logger.info("wiki link:{}", wikiUrl);
+                }
+                if (tag.getName().equals("name")) {
+                    //方法名
+                    if (tag.getValueElement() == null) {
+                        return null;
+                    }
+                    String name = tag.getValueElement().getText();
+                    protoMethodBean.setWikiTitle(name);
                 }
             }
         }
