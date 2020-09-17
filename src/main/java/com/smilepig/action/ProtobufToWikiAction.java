@@ -35,6 +35,8 @@ public class ProtobufToWikiAction extends AnAction {
 
     private final static Logger logger = LoggerFactory.getLogger(ProtobufToWikiAction.class);
 
+    private InterfacePageService pageService;
+
     @Override
     public void actionPerformed(AnActionEvent e) {
         Project project = e.getData(PlatformDataKeys.PROJECT);
@@ -54,10 +56,8 @@ public class ProtobufToWikiAction extends AnAction {
             return;
         }
 
-        InterfacePageService pageService;
         //todo 如果本地有用户名密码, 帮用户登录, 下面流程跳过
-
-        while (true){
+        while (pageService == null){
             //登录
             LoginDialog loginDialog = new LoginDialog(true);
             loginDialog.show();
