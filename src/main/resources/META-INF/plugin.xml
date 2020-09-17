@@ -24,8 +24,6 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <codeInsight.lineMarkerProvider language="JAVA"
-                                        implementationClass="com.smilepig.provider.ProtoToWikiLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="com.smilepig.provider.ProtoLineMarkerProvider"/>
     </extensions>
 
