@@ -12,7 +12,7 @@ import java.awt.*;
 public class LoginDialog extends DialogWrapper {
 
     private JTextField jTextFieldName;
-    private JTextField jTextFieldPwd;
+    private JPasswordField jTextFieldPwd;
     private JCheckBox jCheckBox;
 
     public LoginDialog(boolean canBeParent) {
@@ -29,7 +29,7 @@ public class LoginDialog extends DialogWrapper {
 
         jPanel.setSize(400, 200);
         jTextFieldName = new JTextField();
-        jTextFieldPwd = new JTextField();
+        jTextFieldPwd = new JPasswordField();
         JLabel jLabelName = new JLabel("域账号");
         JLabel jLabelPwd = new JLabel("密码");
         jCheckBox = new JCheckBox("记住密码");
@@ -58,7 +58,7 @@ public class LoginDialog extends DialogWrapper {
         return jTextFieldPwd;
     }
 
-    public void setjTextFieldPwd(JTextField jTextFieldPwd) {
+    public void setjTextFieldPwd(JPasswordField jTextFieldPwd) {
         this.jTextFieldPwd = jTextFieldPwd;
     }
 
