@@ -18,7 +18,7 @@ public class ProtoMethodBean {
 
     private String applicationContext;
 
-    private String wikiTitle;//wiki±ÍÃ‚
+    private String wikiTitle;
 
     public JavaTypeBean getRequestInfo() {
         return requestInfo;
