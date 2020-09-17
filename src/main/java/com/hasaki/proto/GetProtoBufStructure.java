@@ -73,6 +73,7 @@ public class GetProtoBufStructure {
                             //记录此文件导入的所有包
                             List<String> importList = new ArrayList<>();
                             importList.add(fileName);
+                            boolean isOneOf=false;
                             while ((line = reader.readLine()) != null) {
                                 if (line.contains("java_outer_classname")) {
                                     classname = line;
@@ -84,19 +85,23 @@ public class GetProtoBufStructure {
                                 if (isMatchMethod) {
                                     if (line.contains("}")) {
                                         bracketsIndex--;
+                                        isOneOf=false;
                                     }
                                     if (line.contains("{")) {
                                         bracketsIndex++;
                                     }
                                     stringBuilder.append(line + "\n");
-                                    sonProto(line, sonProto);
+                                    sonProto(line, sonProto,isOneOf);
+                                    if(line.contains("oneof ")){
+                                        isOneOf=true;
+                                    }
                                     if (bracketsIndex == 0) {
                                         ProtoStructureBean protoStructureBean = protoStructureBeans.get(protoStructureBeans.size() - 1);
                                         protoStructureBean.setProtoStructure(stringBuilder.toString());
                                         if (sonProto.size() > 0) {
                                             protoStructureBean.setSubProtoTitles(sonProto);
                                             for (String s : sonProto) {
-                                                protoNameList.put(s, protoStructureBean.getProtoName());
+                                                protoNameList.put(s, protoStructureBean.getProtoTitle());
                                             }
                                         }
                                         sonProto = new ArrayList<>();
@@ -115,7 +120,7 @@ public class GetProtoBufStructure {
                                     } else {
                                         List<String> stringList = new ArrayList<>();
                                         for (ProtoStructureBean structureBean : protoStructureBeans) {
-                                            if (structureBean.getProtoName().equals(value)) {
+                                            if (structureBean.getProtoTitle().equals(value)) {
                                                 stringList = structureBean.getImportTitleList();
 
                                             }
@@ -131,8 +136,9 @@ public class GetProtoBufStructure {
                                         protoStructureBean.setProtoFileName(fileName);
                                         protoStructureBean.setImportTitleList(importList);
                                         protoStructureBeans.add(protoStructureBean);
-
-                                        stringBuilder.append(stringLine.get(stringLine.size() - 1) + "\n");
+                                        if(stringLine.get(stringLine.size() - 1).contains("//")) {
+                                            stringBuilder.append(stringLine.get(stringLine.size() - 1) + "\n");
+                                        }
                                         stringBuilder.append(line + "\n");
                                         isMatchMethod = true;
                                         if (line.contains("{")) {
@@ -168,8 +174,8 @@ public class GetProtoBufStructure {
         JavaTypeBean responseInfo = new JavaTypeBean();
 
         responseInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
-        responseInfo.setClassType("CourseSvcClassHourV2ArrangeFormalCourseResponse");
-        responseInfo.setRootClassName("CourseSvcArrangeCourseProto");
+        responseInfo.setClassType("CourseSvcDeleteApplyInfoResponse");
+        responseInfo.setRootClassName("CourseSvcDeleteWalletItemProto");
         protoMethodBean.setResponseInfo(responseInfo);
         PageEditInfo pageEditInfo = getProto(protoMethodBean);
         Gson gson = new Gson();
@@ -210,6 +216,7 @@ public class GetProtoBufStructure {
             getJarName(jarFiles, protoMap, protoStructureBeansAll);
 
             PageEditInfo pageEditInfo = new PageEditInfo();
+            pageEditInfo.setApplicationContext(protoMethodBean.getApplicationContext());
             pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
             pageEditInfo.setUrl(protoMethodBean.getApplicationContext()+protoMethodBean.getControllerUrl()+protoMethodBean.getMethodUrl());
             pageEditInfo.setTitle(protoMethodBean.getWikiTitle());
@@ -291,7 +298,7 @@ public class GetProtoBufStructure {
      * @param protoNameList
      * @return
      */
-    public static String sonProto(String line, List<String> protoNameList) {
+    public static String sonProto(String line, List<String> protoNameList,boolean isOneOf) {
         int index = line.indexOf("optional");
         if (index == -1) {
             index = line.indexOf("repeated");
@@ -303,7 +310,6 @@ public class GetProtoBufStructure {
             char[] chars = line.toCharArray();
             StringBuilder stringBuilder = new StringBuilder();
             boolean in = false;
-            int j = 0;
             for (int i = 0; i < chars.length; i++) {
                 if (i < index + 8) {
                     continue;
@@ -318,6 +324,25 @@ public class GetProtoBufStructure {
                 stringBuilder.append(chars[i]);
             }
             protoNameList.add(stringBuilder.toString());
+            return stringBuilder.toString();
+        }
+        if(isOneOf){
+            char[] chars = line.toCharArray();
+            StringBuilder stringBuilder = new StringBuilder();
+            boolean in = false;
+            for (int i = 0; i < chars.length; i++) {
+                if (chars[i] == 32) {
+                    if (in) {
+                        break;
+                    }
+                    continue;
+                }
+                in = true;
+                stringBuilder.append(chars[i]);
+            }
+            if(stringBuilder.toString().matches("[A-Za-z]+")) {
+                protoNameList.add(stringBuilder.toString());
+            }
             return stringBuilder.toString();
         }
         if (line.contains("message ")||line.contains("enum ")) {

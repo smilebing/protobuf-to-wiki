@@ -2,6 +2,7 @@ package com.hasaki;
 
 import com.hasaki.wiki.ConfluenceSoapService;
 import com.hasaki.wiki.ConfluenceSoapServiceServiceLocator;
+import com.hasaki.wiki.RemotePage;
 import com.hasaki.wiki.RemotePageSummary;
 
 import javax.xml.rpc.ServiceException;
@@ -70,6 +71,8 @@ public class WIkiOptDemo {
 //        RemotePage remotePage = confluenceSoapService.getPage(token, "BS", "proto.coursesvc");
         RemotePageSummary[] children = confluenceSoapService.getChildren(token, 134284498);
         System.out.println(children);
+        RemotePage page = confluenceSoapService.getPage(token, 191300002);
+        System.out.println(page.getContent());
 
 //        System.out.println(remotePage.getContent());
 
