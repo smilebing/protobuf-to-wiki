@@ -92,4 +92,22 @@ public class ProtoStructureBean {
     public void setProtoStructure(String protoStructure) {
         this.protoStructure = protoStructure;
     }
+
+    @Override
+    public int hashCode() {
+        return protoTitle.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ProtoStructureBean other = (ProtoStructureBean) obj;
+        return other.protoTitle.equals(this.protoTitle);
+    }
+
 }

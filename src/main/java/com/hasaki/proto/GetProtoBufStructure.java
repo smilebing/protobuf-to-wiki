@@ -252,7 +252,9 @@ public class GetProtoBufStructure {
                         if (structureBean.getSubProtoTitles() != null && structureBean.getSubProtoTitles().size() > 0) {
                             setProtoStructureBeans(structureBean, protoStructureBeans);
                         }
-                        protoStructureBeanList.add(structureBean);
+                        if(!protoStructureBeanList.contains(structureBean)) {
+                            protoStructureBeanList.add(structureBean);
+                        }
                         protoStructureBean.setProtoStructureBeans(protoStructureBeanList);
                     }
                 }
@@ -272,7 +274,13 @@ public class GetProtoBufStructure {
         if (!line.contains(s)) {
             return false;
         }
-        if (!(line.contains("message ") || line.contains("enum "))) {
+        if (!(line.contains("message") || line.contains("enum"))) {
+            return false;
+        }
+        int index = line.indexOf(s);
+        char[] chars = line.toCharArray();
+        char c = chars[index + s.length()];
+        if ((c >= 65 & c <= 90) || (c >= 97 & c <= 122)) {
             return false;
         }
         return true;
