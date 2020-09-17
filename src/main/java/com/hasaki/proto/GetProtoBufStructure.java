@@ -77,7 +77,7 @@ public class GetProtoBufStructure {
                                 if (line.contains("java_outer_classname")) {
                                     classname = line;
                                 }
-                                if (isImport(line, "import")) {
+                                if (line.contains("import ")) {
                                     importList.add(line.substring(line.lastIndexOf("/") + 1, line.indexOf(".proto")));
                                 }
                                 //上一行匹配到方法后，往下开始写入结构
@@ -252,7 +252,9 @@ public class GetProtoBufStructure {
                         if (structureBean.getSubProtoTitles() != null && structureBean.getSubProtoTitles().size() > 0) {
                             setProtoStructureBeans(structureBean, protoStructureBeans);
                         }
-                        protoStructureBeanList.add(structureBean);
+                        if(!protoStructureBeanList.contains(structureBean)) {
+                            protoStructureBeanList.add(structureBean);
+                        }
                         protoStructureBean.setProtoStructureBeans(protoStructureBeanList);
                     }
                 }
@@ -279,23 +281,6 @@ public class GetProtoBufStructure {
         char[] chars = line.toCharArray();
         char c = chars[index + s.length()];
         if ((c >= 65 & c <= 90) || (c >= 97 & c <= 122)) {
-            return false;
-        }
-        return true;
-    }
-    /**
-     * 匹配某一行是否是导入的包
-     * @param line
-     * @param s
-     * @return
-     */
-    public static boolean isImport(String line, String s) {
-        if (line.indexOf(s) != 0) {
-            return false;
-        }
-        char[] chars = line.toCharArray();
-        char c = chars[s.length()];
-        if (c != 32) {
             return false;
         }
         return true;
@@ -335,7 +320,7 @@ public class GetProtoBufStructure {
             protoNameList.add(stringBuilder.toString());
             return stringBuilder.toString();
         }
-        if (line.contains("message")) {
+        if (line.contains("message ")||line.contains("enum ")) {
             protoNameList.removeIf(line::contains);
         }
         return "";
