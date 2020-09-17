@@ -1,7 +1,9 @@
 package com.smilepig.action;
 
 import com.hasaki.bean.PageEditInfo;
+import com.hasaki.page.InterfacePageService;
 import com.hasaki.proto.GetProtoBufStructure;
+import com.hasaki.wiki.RemotePage;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -25,6 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.util.Properties;
 
 /**
  * Created by zhuhe on 2020/8/28
@@ -64,18 +70,42 @@ public class ProtobufToWikiAction extends AnAction {
                 String pwd = loginDialog.getjTextFieldPwd().getText().trim();
                 boolean selected = loginDialog.getjCheckBox().isSelected();
                 logger.debug("登陆,name:{},pwd:{},selected:{}", name, pwd, selected);
+                Properties properties = new Properties();
+                try {
+                    properties.load(new FileInputStream("D:\\account.properties"));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                String username = properties.getProperty("username");
+                String password = properties.getProperty("password");
+
+
+                InterfacePageService pageService = null;
+                try {
+                    pageService = InterfacePageService.getInstance(username, password);
+                } catch (Exception ex) {
+                    //登录失败..
+                    throw new RuntimeException(ex.getMessage());
+                }
 
                 //todo:zh 登陆
                 Messages.showMessageDialog(project, "登陆成功", "提示", Messages.getInformationIcon());
-
 
                 //搜索proto相关注解，url
                 PsiScanService psiScanService = new PsiScanService();
                 ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(e);
 
-
+                controllerInfo.setWikiTitle("测试测试测试121321312");
                 //todo:zh 生成wiki
                 PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
+                RemotePage remotePage;
+                try {
+                    remotePage = pageService.createPageInfo(pageEditInfo, 134284818L);
+                } catch (RemoteException ex) {
+                    ex.printStackTrace();
+                    //生成wiki失败
+                    throw new RuntimeException();
+                }
 
                 ApplicationManager.getApplication().runReadAction(new Runnable() {
                     @Override
@@ -100,7 +130,7 @@ public class ProtobufToWikiAction extends AnAction {
 
 
                 //发送通知
-                SimpleNotification.notify(project, "<a href='http://www.baidu.com'>link</a>");
+                SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>",remotePage.getUrl(), remotePage.getTitle()));
 
 
             }
