@@ -68,7 +68,7 @@ public class InterfacePageService {
      * @param pageEditInfo
      * @return
      */
-    public void updatePageInfo(PageEditInfo pageEditInfo) throws RemoteException {
+    public RemotePage updatePageInfo(PageEditInfo pageEditInfo) throws RemoteException {
         RemotePage page = confluenceSoapService.getPage(token, pageEditInfo.getPageId());
 
         //标题
@@ -78,7 +78,8 @@ public class InterfacePageService {
         //内容
         String result = editPageContent(pageEditInfo, page.getContent());
         page.setContent(result);
-        confluenceSoapService.storePage(token, page);
+        RemotePage remotePage = confluenceSoapService.storePage(token, page);
+        return remotePage;
     }
 
     private String editPageContent(PageEditInfo pageEditInfo, String content) throws RemoteException {

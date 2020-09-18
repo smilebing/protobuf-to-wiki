@@ -73,7 +73,7 @@ public class GetProtoBufStructure {
                             //记录此文件导入的所有包
                             List<String> importList = new ArrayList<>();
                             importList.add(fileName);
-                            boolean isOneOf=false;
+                            boolean isOneOf = false;
                             while ((line = reader.readLine()) != null) {
                                 if (line.matches("\\s*option\\s*java_outer_classname\\s+.*")) {
                                     classname = line;
@@ -85,15 +85,15 @@ public class GetProtoBufStructure {
                                 if (isMatchMethod) {
                                     if (line.contains("}")) {
                                         bracketsIndex--;
-                                        isOneOf=false;
+                                        isOneOf = false;
                                     }
                                     if (line.contains("{")) {
                                         bracketsIndex++;
                                     }
                                     stringBuilder.append(line + "\n");
-                                    sonProto(line, sonProto,isOneOf);
-                                    if(line.matches("\\s*oneof\\s+.*")){
-                                        isOneOf=true;
+                                    sonProto(line, sonProto, isOneOf);
+                                    if (line.matches("\\s*oneof\\s+.*")) {
+                                        isOneOf = true;
                                     }
                                     if (bracketsIndex == 0) {
                                         ProtoStructureBean protoStructureBean = protoStructureBeans.get(protoStructureBeans.size() - 1);
@@ -101,7 +101,7 @@ public class GetProtoBufStructure {
                                         if (sonProto.size() > 0) {
                                             protoStructureBean.setSubProtoTitles(sonProto);
                                             for (String s : sonProto) {
-                                                protoNameList.put(s, protoStructureBean.getProtoTitle());
+                                                protoNameList.put(s + "-" + protoStructureBean.getProtoName(), protoStructureBean.getProtoTitle());
                                             }
                                         }
                                         sonProto = new ArrayList<>();
@@ -112,8 +112,10 @@ public class GetProtoBufStructure {
                                 Iterator<String> it = protoNameList.keySet().iterator();
                                 while (it.hasNext()) {
                                     String s = it.next();
+                                    String[] sList = s.split("-");
+                                    String protoName = sList[0];
                                     String value = protoNameList.get(s);
-                                    if ((s.endsWith("Response") || s.endsWith("Request")) && !s.equals("BaseResponse")) {
+                                    if ((protoName.endsWith("Response") || protoName.endsWith("Request")) && !protoName.equals("BaseResponse")) {
                                         if (!classname.contains(value)) {
                                             continue;
                                         }
@@ -129,14 +131,19 @@ public class GetProtoBufStructure {
                                             continue;
                                         }
                                     }
-                                    if (line.matches("\\s*(message|enum)\\s+"+s+"[^a-zA-Z]+.*")) {
+                                    if (line.matches("\\s*(message|enum)\\s+" + protoName + "[^a-zA-Z]+.*")) {
+
                                         ProtoStructureBean protoStructureBean = new ProtoStructureBean();
-                                        protoStructureBean.setProtoTitle(fileName + "-" + s);
-                                        protoStructureBean.setProtoName(s);
+                                        protoStructureBean.setProtoTitle(fileName + "-" + protoName);
+                                        protoStructureBean.setProtoName(protoName);
                                         protoStructureBean.setProtoFileName(fileName);
                                         protoStructureBean.setImportTitleList(importList);
+                                        it.remove();
+                                        if (protoStructureBeans.contains(protoStructureBean)) {
+                                            continue;
+                                        }
                                         protoStructureBeans.add(protoStructureBean);
-                                        if(stringLine.get(stringLine.size() - 1).matches("\\s*//.*")) {
+                                        if (stringLine.get(stringLine.size() - 1).matches("\\s*//.*")) {
                                             stringBuilder.append(stringLine.get(stringLine.size() - 1) + "\n");
                                         }
                                         stringBuilder.append(line + "\n");
@@ -144,8 +151,7 @@ public class GetProtoBufStructure {
                                         if (line.contains("{")) {
                                             bracketsIndex++;
                                         }
-                                        it.remove();
-                                        break;
+
                                     }
                                 }
                                 stringLine.add(line);
@@ -154,8 +160,7 @@ public class GetProtoBufStructure {
                         }
                     }
                 }
-            } catch (
-                    IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -165,6 +170,9 @@ public class GetProtoBufStructure {
     }
 
     public static void main(String[] args) {
+        String s = "OrderServiceAddOrderDetailForPiRequest";
+        String[] sList = s.split("-");
+        System.out.println(sList[0]);
         ProtoMethodBean protoMethodBean = new ProtoMethodBean();
         JavaTypeBean requestInfo = new JavaTypeBean();
         requestInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
@@ -190,11 +198,11 @@ public class GetProtoBufStructure {
     public static PageEditInfo getProto(ProtoMethodBean protoMethodBean) {
 
         try {
-            if(protoMethodBean==null){
+            if (protoMethodBean == null) {
                 throw new Exception("protoMethodBean is null");
             }
-            if(protoMethodBean.getRequestInfo()==null||protoMethodBean.getResponseInfo()==null){
-                throw new Exception("request or response is null,protoMethodBean:"+new Gson().toJson(protoMethodBean));
+            if (protoMethodBean.getRequestInfo() == null || protoMethodBean.getResponseInfo() == null) {
+                throw new Exception("request or response is null,protoMethodBean:" + new Gson().toJson(protoMethodBean));
             }
             JavaTypeBean javaTypeBean = protoMethodBean.getRequestInfo();
 
@@ -219,10 +227,20 @@ public class GetProtoBufStructure {
             PageEditInfo pageEditInfo = new PageEditInfo();
             pageEditInfo.setApplicationContext(protoMethodBean.getApplicationContext());
             pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
-            pageEditInfo.setUrl(protoMethodBean.getApplicationContext()+protoMethodBean.getControllerUrl()+protoMethodBean.getMethodUrl());
+            pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
             pageEditInfo.setTitle(protoMethodBean.getWikiTitle());
             pageEditInfo.setHeader("Content-Type: application/x-protobuf");
             pageEditInfo.setHost("http://api.changingedu.com");
+            String wikiUrl = protoMethodBean.getWikiUrl();
+            if (wikiUrl != null && wikiUrl.contains("=")) {
+                int index = wikiUrl.indexOf("=");
+                String pageId=wikiUrl.substring(index+1).trim();
+                try {
+                    pageEditInfo.setPageId(Long.parseLong(pageId));
+                }catch (Exception e){
+
+                }
+            }
             for (ProtoStructureBean protoStructureBean : protoStructureBeansAll) {
                 if ((protoStructureBean.getProtoName().endsWith("Response")) && !protoStructureBean.getProtoName().equals("BaseResponse")) {
                     //递归构造responseProto的子结构
@@ -244,6 +262,7 @@ public class GetProtoBufStructure {
 
     /**
      * 递归构造proto的子结构
+     *
      * @param protoStructureBean
      * @param protoStructureBeans
      */
@@ -252,7 +271,7 @@ public class GetProtoBufStructure {
         if (protoStructureBean.getSubProtoTitles() != null && protoStructureBean.getSubProtoTitles().size() > 0) {
             for (String subProtoTitle : protoStructureBean.getSubProtoTitles()) {
                 for (ProtoStructureBean structureBean : protoStructureBeans) {
-                    if (structureBean.getProtoName().equals(subProtoTitle)) {
+                    if (structureBean.getProtoName().equals(subProtoTitle) && protoStructureBean.getImportTitleList().contains(structureBean.getProtoFileName())) {
                         List<ProtoStructureBean> protoStructureBeanList = protoStructureBean.getProtoStructureBeans();
                         if (protoStructureBeanList == null) {
                             protoStructureBeanList = new ArrayList<>();
@@ -260,7 +279,7 @@ public class GetProtoBufStructure {
                         if (structureBean.getSubProtoTitles() != null && structureBean.getSubProtoTitles().size() > 0) {
                             setProtoStructureBeans(structureBean, protoStructureBeans);
                         }
-                        if(!protoStructureBeanList.contains(structureBean)) {
+                        if (!protoStructureBeanList.contains(structureBean)) {
                             protoStructureBeanList.add(structureBean);
                         }
                         protoStructureBean.setProtoStructureBeans(protoStructureBeanList);
@@ -271,13 +290,15 @@ public class GetProtoBufStructure {
 
 
     }
+
     /**
      * 获取结构体里面的子方法
+     *
      * @param line
      * @param protoNameList
      * @return
      */
-    public static void sonProto(String line, List<String> protoNameList,boolean isOneOf) {
+    public static void sonProto(String line, List<String> protoNameList, boolean isOneOf) {
         int index = line.indexOf("optional");
         if (index == -1) {
             index = line.indexOf("repeated");
@@ -285,7 +306,7 @@ public class GetProtoBufStructure {
 
         if (index != -1) {
             if (line.matches(".*\\s+(bool|int32|int64|double|string)\\s+.*")) {
-                return ;
+                return;
             }
             char[] chars = line.toCharArray();
             StringBuilder stringBuilder = new StringBuilder();
@@ -304,9 +325,9 @@ public class GetProtoBufStructure {
                 stringBuilder.append(chars[i]);
             }
             protoNameList.add(stringBuilder.toString());
-            return ;
+            return;
         }
-        if(isOneOf){
+        if (isOneOf) {
             char[] chars = line.toCharArray();
             StringBuilder stringBuilder = new StringBuilder();
             boolean in = false;
@@ -321,15 +342,15 @@ public class GetProtoBufStructure {
                 stringBuilder.append(chars[i]);
             }
 
-            if(stringBuilder.toString().matches("[A-Za-z]+")) {
+            if (stringBuilder.toString().matches("[A-Za-z]+")) {
                 protoNameList.add(stringBuilder.toString());
             }
-            return ;
+            return;
         }
         if (line.matches("\\s*(message|enum)\\s+.*")) {
             protoNameList.removeIf(line::contains);
         }
-        return ;
+        return;
 
     }
 
@@ -359,6 +380,7 @@ public class GetProtoBufStructure {
 
     /**
      * 获取base架包所在的目录
+     *
      * @param jarPath
      * @return
      * @throws Exception

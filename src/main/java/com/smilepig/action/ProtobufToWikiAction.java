@@ -144,7 +144,11 @@ public class ProtobufToWikiAction extends AnAction {
         PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
         RemotePage remotePage;
         try {
-            remotePage = pageService.createPageInfo(pageEditInfo, 134284818L);
+            if(pageEditInfo.getPageId() != null){
+                remotePage = pageService.updatePageInfo(pageEditInfo);
+            }else{
+                remotePage = pageService.createPageInfo(pageEditInfo, 134284818L);
+            }
         } catch (RemoteException ex) {
             ex.printStackTrace();
             //生成wiki失败
