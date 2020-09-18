@@ -75,10 +75,10 @@ public class GetProtoBufStructure {
                             importList.add(fileName);
                             boolean isOneOf=false;
                             while ((line = reader.readLine()) != null) {
-                                if (line.contains("java_outer_classname")) {
+                                if (line.matches("\\s*option\\s*java_outer_classname\\s+.*")) {
                                     classname = line;
                                 }
-                                if (line.contains("import ")) {
+                                if (line.matches("\\s*import\\s+.*")) {
                                     importList.add(line.substring(line.lastIndexOf("/") + 1, line.indexOf(".proto")));
                                 }
                                 //上一行匹配到方法后，往下开始写入结构
@@ -92,7 +92,7 @@ public class GetProtoBufStructure {
                                     }
                                     stringBuilder.append(line + "\n");
                                     sonProto(line, sonProto,isOneOf);
-                                    if(line.contains("oneof ")){
+                                    if(line.matches("\\s*oneof\\s+.*")){
                                         isOneOf=true;
                                     }
                                     if (bracketsIndex == 0) {
@@ -129,14 +129,14 @@ public class GetProtoBufStructure {
                                             continue;
                                         }
                                     }
-                                    if (isLine(line, s)) {
+                                    if (line.matches("\\s*(message|enum)\\s+"+s+"[^a-zA-Z]+.*")) {
                                         ProtoStructureBean protoStructureBean = new ProtoStructureBean();
                                         protoStructureBean.setProtoTitle(fileName + "-" + s);
                                         protoStructureBean.setProtoName(s);
                                         protoStructureBean.setProtoFileName(fileName);
                                         protoStructureBean.setImportTitleList(importList);
                                         protoStructureBeans.add(protoStructureBean);
-                                        if(stringLine.get(stringLine.size() - 1).contains("//")) {
+                                        if(stringLine.get(stringLine.size() - 1).matches("\\s*//.*")) {
                                             stringBuilder.append(stringLine.get(stringLine.size() - 1) + "\n");
                                         }
                                         stringBuilder.append(line + "\n");
@@ -200,6 +200,10 @@ public class GetProtoBufStructure {
 
             Map<String, String> protoMap = new HashMap<>();
             Set<String> jarFiles = new HashSet<>();
+            String jarPath = javaTypeBean.getJarPath();
+            if (!jarPath.contains("protobuf-base") && !protoMethodBean.getRequestInfo().getJarPath().contains("protobuf-base")) {
+                jarFiles.add(getProtoFilePath(getProjectPath(jarPath)));
+            }
             //构造Request
             jarFiles.add(javaTypeBean.getJarPath());
             protoMap.put(javaTypeBean.getClassType(), javaTypeBean.getRootClassName());
@@ -207,10 +211,7 @@ public class GetProtoBufStructure {
             jarFiles.add(protoMethodBean.getResponseInfo().getJarPath());
             protoMap.put(protoMethodBean.getResponseInfo().getClassType(), protoMethodBean.getResponseInfo().getRootClassName());
 
-            String jarPath = javaTypeBean.getJarPath();
-            if (!jarPath.contains("protobuf-base") && !protoMethodBean.getRequestInfo().getJarPath().contains("protobuf-base")) {
-                jarFiles.add(getProtoFilePath(getProjectPath(jarPath)));
-            }
+
             List<ProtoStructureBean> protoStructureBeansAll = new ArrayList<>();
             //获取proto结构关系
             getJarName(jarFiles, protoMap, protoStructureBeansAll);
@@ -270,42 +271,21 @@ public class GetProtoBufStructure {
 
 
     }
-
-    /**
-     * 匹配是否是特定的方法
-     * @param line
-     * @param s
-     * @return
-     */
-    public static boolean isLine(String line, String s) {
-        if (!line.contains(s)) {
-            return false;
-        }
-        if (!(line.contains("message") || line.contains("enum"))) {
-            return false;
-        }
-        int index = line.indexOf(s);
-        char[] chars = line.toCharArray();
-        char c = chars[index + s.length()];
-        if ((c >= 65 & c <= 90) || (c >= 97 & c <= 122)) {
-            return false;
-        }
-        return true;
-    }
     /**
      * 获取结构体里面的子方法
      * @param line
      * @param protoNameList
      * @return
      */
-    public static String sonProto(String line, List<String> protoNameList,boolean isOneOf) {
+    public static void sonProto(String line, List<String> protoNameList,boolean isOneOf) {
         int index = line.indexOf("optional");
         if (index == -1) {
             index = line.indexOf("repeated");
         }
+
         if (index != -1) {
-            if (line.contains("bool") || line.contains("int32") || line.contains("int64") || line.contains("double") || line.contains("string")) {
-                return "";
+            if (line.matches(".*\\s+(bool|int32|int64|double|string)\\s+.*")) {
+                return ;
             }
             char[] chars = line.toCharArray();
             StringBuilder stringBuilder = new StringBuilder();
@@ -324,7 +304,7 @@ public class GetProtoBufStructure {
                 stringBuilder.append(chars[i]);
             }
             protoNameList.add(stringBuilder.toString());
-            return stringBuilder.toString();
+            return ;
         }
         if(isOneOf){
             char[] chars = line.toCharArray();
@@ -340,15 +320,16 @@ public class GetProtoBufStructure {
                 in = true;
                 stringBuilder.append(chars[i]);
             }
+
             if(stringBuilder.toString().matches("[A-Za-z]+")) {
                 protoNameList.add(stringBuilder.toString());
             }
-            return stringBuilder.toString();
+            return ;
         }
-        if (line.contains("message ")||line.contains("enum ")) {
+        if (line.matches("\\s*(message|enum)\\s+.*")) {
             protoNameList.removeIf(line::contains);
         }
-        return "";
+        return ;
 
     }
 
