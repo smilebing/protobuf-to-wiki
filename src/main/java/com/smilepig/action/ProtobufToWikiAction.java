@@ -9,19 +9,23 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.SelectionModel;
-import com.intellij.openapi.editor.ex.util.EditorUtil;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.javadoc.PsiDocComment;
+import com.intellij.psi.javadoc.PsiDocTag;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.JBColor;
 import com.smilepig.bean.ProtoMethodBean;
 import com.smilepig.notify.LoginDialog;
@@ -70,10 +74,6 @@ public class ProtobufToWikiAction extends AnAction {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
 
         assert editor != null;
-        SelectionModel selectionModel = editor.getSelectionModel();
-        logger.info("selectionModel:{}", selectionModel);
-        String selectedText = selectionModel.getSelectedText();
-
 
         // Ensure this isn't part of testing
         if (ApplicationManager.getApplication().isUnitTestMode()) {
@@ -147,6 +147,31 @@ public class ProtobufToWikiAction extends AnAction {
         htmlTextBalloonBuilder.setFadeoutTime(5 * 1000)
                 .createBalloon()
                 .show(factory.guessBestPopupLocation(editor), Position.below);
+
+
+        //填充注释
+        PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        PsiDocComment docComment = containingMethod.getDocComment();
+        boolean hasWikiDoc = false;
+        boolean hasNameDoc = false;
+        for (PsiDocTag tag : docComment.getTags()) {
+            if (tag.getName().equals("wiki")) {
+                //wiki 链接
+                hasWikiDoc = true;
+                Document document = editor.getDocument();
+                if (tag.getValueElement() == null) {
+                    //有@wiki，没有wiki链接
+                    String url = "@wiki wiki.changingedu.com/lalala";
+                    TextRange textRange = tag.getNameElement().getTextRange();
+                    WriteCommandAction.runWriteCommandAction(project, () ->
+                            document.replaceString(textRange.getStartOffset(),textRange.getEndOffset(), url)
+                    );
+                }
+            }
+            if (tag.getName().equals("name")) {
+                hasNameDoc = true;
+            }
+        }
 
 
         //发送通知
