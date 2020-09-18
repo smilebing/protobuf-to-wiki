@@ -20,17 +20,24 @@ import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.formatter.FormatterUtil;
+import com.intellij.psi.impl.source.javadoc.PsiDocCommentImpl;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.JBColor;
 import com.smilepig.bean.ProtoMethodBean;
+import com.smilepig.icon.SimpleIcons;
 import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
 import com.smilepig.service.psi.PsiScanService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,6 +120,24 @@ public class ProtobufToWikiAction extends AnAction {
         //搜索proto相关注解，url
         PsiScanService psiScanService = new PsiScanService();
         ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(project, element);
+        if (controllerInfo.getWikiTitle() == null) {
+            String wikiTitle = Messages.showInputDialog(project, "请输入接口名称", "提示", SimpleIcons.FILE);
+            wikiTitle = wikiTitle.trim();
+            if (StringUtils.isEmpty(wikiTitle)) {
+                Messages.showMessageDialog(project, "请输入有效的名称", "提示", Messages.getInformationIcon());
+                return;
+            }
+            controllerInfo.setWikiTitle(wikiTitle);
+        }
+
+        if (controllerInfo.getWikiUrl() == null) {
+            String wikiUrl = Messages.showInputDialog(project, "请输入wiki地址,新接口不用输入", "提示", SimpleIcons.FILE);
+            wikiUrl = wikiUrl.trim();
+            if (StringUtils.isEmpty(wikiUrl)) {
+                controllerInfo.setWikiUrl(wikiUrl);
+            }
+        }
+
 
 
         //生成wiki
@@ -154,24 +179,49 @@ public class ProtobufToWikiAction extends AnAction {
         PsiDocComment docComment = containingMethod.getDocComment();
         boolean hasWikiDoc = false;
         boolean hasNameDoc = false;
-        for (PsiDocTag tag : docComment.getTags()) {
-            if (tag.getName().equals("wiki")) {
+        if (docComment != null) {
+            PsiDocTag wikiDoc = docComment.findTagByName("wiki");
+            PsiDocTag nameDoc = docComment.findTagByName("name");
+
+            if (wikiDoc != null) {
                 //wiki 链接
                 hasWikiDoc = true;
                 Document document = editor.getDocument();
-                if (tag.getValueElement() == null) {
+                if (wikiDoc.getValueElement() == null) {
                     //有@wiki，没有wiki链接
                     String url = "@wiki wiki.changingedu.com/lalala";
-                    TextRange textRange = tag.getNameElement().getTextRange();
+                    TextRange textRange = wikiDoc.getNameElement().getTextRange();
                     WriteCommandAction.runWriteCommandAction(project, () ->
-                            document.replaceString(textRange.getStartOffset(),textRange.getEndOffset(), url)
+                            document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), url)
                     );
                 }
             }
-            if (tag.getName().equals("name")) {
+
+            if (nameDoc != null) {
                 hasNameDoc = true;
+                Document document = editor.getDocument();
+                if (nameDoc.getValueElement() == null) {
+                    String url = "@name " + controllerInfo.getWikiTitle();
+                    TextRange textRange = nameDoc.getNameElement().getTextRange();
+                    WriteCommandAction.runWriteCommandAction(project, () ->
+                            document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), url)
+                    );
+                }
             }
+
+        } else {
+            PsiDocComment docCommentFromText = PsiElementFactory
+                    .getInstance(project).createDocCommentFromText("    /**\n" +
+                                                  "     * 学生答疑欠费详情\n" +
+                                                  "     *\n" +
+                                                  "     * @param httpServletRequest\n" +
+                                                  "     * @return\n" +
+                                                  "     */\n",containingMethod);
+
+            containingMethod.addBefore(docCommentFromText,containingMethod.getModifierList());
+            CodeStyleManager.getInstance (element.getManager ()).reformat (containingMethod);
         }
+
 
 
         //发送通知

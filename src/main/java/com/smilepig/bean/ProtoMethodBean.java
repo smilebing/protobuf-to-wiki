@@ -20,6 +20,8 @@ public class ProtoMethodBean {
 
     private String wikiTitle;
 
+    private boolean hasDoc;
+
     public JavaTypeBean getRequestInfo() {
         return requestInfo;
     }
@@ -82,5 +84,13 @@ public class ProtoMethodBean {
 
     public void setWikiTitle(String wikiTitle) {
         this.wikiTitle = wikiTitle;
+    }
+
+    public boolean isHasDoc() {
+        return hasDoc;
+    }
+
+    public void setHasDoc(boolean hasDoc) {
+        this.hasDoc = hasDoc;
     }
 }

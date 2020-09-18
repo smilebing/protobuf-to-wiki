@@ -117,12 +117,13 @@ public class PsiScanService {
 
         PsiDocComment docComment = containingMethod.getDocComment();
         if (docComment != null) {
+            protoMethodBean.setHasDoc(true);
             PsiDocTag[] tags = docComment.getTags();
             for (PsiDocTag tag : tags) {
                 if (tag.getName().equals("wiki")) {
                     //wiki 链接
                     if (tag.getValueElement() == null) {
-                        return null;
+                        continue;
                     }
                     String wikiUrl = tag.getValueElement().getText();
                     protoMethodBean.setWikiUrl(wikiUrl);
@@ -130,12 +131,14 @@ public class PsiScanService {
                 if (tag.getName().equals("name")) {
                     //方法名
                     if (tag.getValueElement() == null) {
-                        return null;
+                        continue;
                     }
                     String name = tag.getValueElement().getText();
                     protoMethodBean.setWikiTitle(name);
                 }
             }
+        } else {
+            protoMethodBean.setHasDoc(false);
         }
 
 
@@ -159,10 +162,10 @@ public class PsiScanService {
             }
         }
 
-        if (requestPsiParameter == null) {
-            return null;
+        JavaTypeBean requestTypeJavaTypeBean = null;
+        if (requestPsiParameter != null) {
+            requestTypeJavaTypeBean = PsiJarService.getJavaTypeBean(project, requestPsiParameter.getTypeElement());
         }
-        JavaTypeBean requestTypeJavaTypeBean = PsiJarService.getJavaTypeBean(project, requestPsiParameter.getTypeElement());
 
 
         PsiAnnotation requestMappingAnno = null;
