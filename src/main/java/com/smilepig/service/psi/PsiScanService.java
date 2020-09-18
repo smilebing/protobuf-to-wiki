@@ -23,6 +23,7 @@ import com.smilepig.bean.ProtoMethodBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +36,8 @@ public class PsiScanService {
     private final static Logger logger = LoggerFactory.getLogger(PsiScanService.class);
 
     public final static String PROTO_REQUEST_PREFIX = "@ProtoRequestBody";
-    public final static String REQUEST_MAPPING_PREFIX = "RequestMapping";
+    public final static List<String> MAPPING_PREFIX_LIST = Arrays.asList("RequestMapping", "GetMapping", "PostMapping");
+
 
     public ProtoMethodBean getControllerInfo(Project project, PsiElement element) {
 
@@ -92,7 +94,7 @@ public class PsiScanService {
             if (text == null) {
                 continue;
             }
-            if (!REQUEST_MAPPING_PREFIX.equals(text)) {
+            if (!MAPPING_PREFIX_LIST.contains(text)) {
                 continue;
             }
 
@@ -173,7 +175,7 @@ public class PsiScanService {
             if (text == null) {
                 continue;
             }
-            if (REQUEST_MAPPING_PREFIX.equals(text)) {
+            if (MAPPING_PREFIX_LIST.contains(text)) {
                 requestMappingAnno = annotation;
                 List<JvmAnnotationAttribute> attributes = requestMappingAnno.getAttributes();
                 for (JvmAnnotationAttribute attribute : attributes) {
