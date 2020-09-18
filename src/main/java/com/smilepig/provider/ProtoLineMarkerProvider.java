@@ -40,7 +40,7 @@ public class ProtoLineMarkerProvider extends RelatedItemLineMarkerProvider {
             if (text == null) {
                 continue;
             }
-            if (!PsiScanService.REQUEST_MAPPING_PREFIX.equals(text)) {
+            if (!PsiScanService.MAPPING_PREFIX_LIST.contains(text)) {
                 continue;
             }
 
