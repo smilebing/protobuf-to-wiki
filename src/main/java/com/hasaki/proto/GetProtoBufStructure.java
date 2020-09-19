@@ -26,7 +26,7 @@ import java.util.jar.JarFile;
 /**
  * @Description
  * @Author wangzhaoyang
- * @Date 2020/8/29 13:01
+ * @Date 2020/09/19 13:01
  **/
 public class GetProtoBufStructure {
     /**
@@ -227,7 +227,11 @@ public class GetProtoBufStructure {
             PageEditInfo pageEditInfo = new PageEditInfo();
             pageEditInfo.setApplicationContext(protoMethodBean.getApplicationContext());
             pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
-            pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+            if(protoMethodBean.getControllerUrl().startsWith("/")){
+                pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+            }else {
+                pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api/" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+            }
             pageEditInfo.setTitle(protoMethodBean.getWikiTitle());
             pageEditInfo.setHeader("Content-Type: application/x-protobuf");
             pageEditInfo.setHost("http://api.changingedu.com");
