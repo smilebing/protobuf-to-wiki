@@ -227,7 +227,11 @@ public class GetProtoBufStructure {
             PageEditInfo pageEditInfo = new PageEditInfo();
             pageEditInfo.setApplicationContext(protoMethodBean.getApplicationContext());
             pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
-            pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+            if(protoMethodBean.getControllerUrl().startsWith("/")){
+                pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+            }else {
+                pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api/" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+            }
             pageEditInfo.setTitle(protoMethodBean.getWikiTitle());
             pageEditInfo.setHeader("Content-Type: application/x-protobuf");
             pageEditInfo.setHost("http://api.changingedu.com");
