@@ -29,11 +29,11 @@
 
     <actions>
 
-        <action id="QQPlugin.ProtoToWiki" class="com.smilepig.action.ProtobufToWikiAction" text="生成wiki接口"
-                description="自动生成protobuf对应的接口文档">
-            <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="Generate"/>
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>
+<!--        <action id="QQPlugin.ProtoToWiki" class="com.smilepig.action.ProtobufToWikiAction" text="生成wiki接口"-->
+<!--                description="自动生成protobuf对应的接口文档">-->
+<!--            <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="Generate"/>-->
+<!--            <add-to-group group-id="EditorPopupMenu" anchor="first"/>-->
+<!--        </action>-->
 
     </actions>
 
