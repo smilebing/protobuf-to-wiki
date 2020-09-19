@@ -16,9 +16,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.popup.Balloon.Position;
-import com.intellij.openapi.ui.popup.BalloonBuilder;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
@@ -29,7 +26,6 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.ui.JBColor;
 import com.smilepig.bean.ProtoMethodBean;
 import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
@@ -38,8 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.xml.rpc.ServiceException;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -147,26 +141,27 @@ public class ProtobufToWikiAction extends AnAction {
             }
         }
 
+        //生成wiki
+        PageEditInfo pageEditInfo = GetProtoBufStructure.getProto(controllerInfo);
+
+        boolean isCreate = false;
         String parentUrl = null;
-        while (parentUrl == null) {
-            String inputUrl = Messages.showInputDialog(project, "请输入该接口wiki挂靠的父目录", "提示", Messages.getInformationIcon());
-            if(inputUrl == null){
-                return;
-            }
-            inputUrl = inputUrl.trim();
-            if (StringUtils.isEmpty(inputUrl) && !inputUrl.startsWith("https://wiki.changingedu.com/pages/viewpage.action?pageId=")) { //todo 正则校验
-                Messages.showMessageDialog(project, "请输入有效的wiki路径", "提示", Messages.getWarningIcon());
-            }else{
-                parentUrl = inputUrl;
+        if(pageEditInfo.getPageId() == null){//创建
+            isCreate = true;
+            while (parentUrl == null) {
+                String inputUrl = Messages.showInputDialog(project, "请输入该接口wiki挂靠的父目录", "提示", Messages.getInformationIcon());
+                if(inputUrl == null){
+                    return;
+                }
+                inputUrl = inputUrl.trim();
+                if (StringUtils.isEmpty(inputUrl) || !inputUrl.startsWith("https://wiki.changingedu.com/pages/viewpage.action?pageId=")) { //todo 正则校验
+                    Messages.showMessageDialog(project, "请输入有效的wiki路径", "提示", Messages.getWarningIcon());
+                }else{
+                    parentUrl = inputUrl;
+                }
             }
         }
 
-        //todo 来个loading框
-
-        String url = "http://www.baidu.com";
-        String wikiName = "PT 接口名称";
-        //生成wiki
-        PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
         RemotePage remotePage;
         try {
             if(pageEditInfo.getPageId() != null){
@@ -189,19 +184,21 @@ public class ProtobufToWikiAction extends AnAction {
 //            }
 //        });
 
+        String url = remotePage.getUrl();
+        String wikiName = remotePage.getTitle();
 
-        //弹窗通知wiki生成成功
-        JBPopupFactory factory = JBPopupFactory.getInstance();
-        BalloonBuilder htmlTextBalloonBuilder = factory.createHtmlTextBalloonBuilder(url, null, JBColor.PINK, new HyperlinkListener() {
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                System.out.println("hyper link");
-            }
-        });
-
-        htmlTextBalloonBuilder.setFadeoutTime(5 * 1000)
-                .createBalloon()
-                .show(factory.guessBestPopupLocation(editor), Position.below);
+//        //弹窗通知wiki生成成功
+//        JBPopupFactory factory = JBPopupFactory.getInstance();
+//        BalloonBuilder htmlTextBalloonBuilder = factory.createHtmlTextBalloonBuilder(url, null, JBColor.PINK, new HyperlinkListener() {
+//            @Override
+//            public void hyperlinkUpdate(HyperlinkEvent e) {
+//                System.out.println("hyper link");
+//            }
+//        });
+//
+//        htmlTextBalloonBuilder.setFadeoutTime(5 * 1000)
+//                .createBalloon()
+//                .show(factory.guessBestPopupLocation(editor), Position.below);
 
 
         //填充注释
@@ -245,10 +242,12 @@ public class ProtobufToWikiAction extends AnAction {
         CodeStyleManager.getInstance (element.getManager ()).reformat (containingMethod);
 
 
-        //todo loading框消失
+        String alertTitle = String.format("【%s】%s成功", wikiName,isCreate?"创建":"更新");
+        Messages.showInfoMessage(url, alertTitle);
+
 
         //发送通知
-        SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>", url, wikiName));
+        SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>", url, wikiName), alertTitle);
     }
 
     private void updateDocDocument(PsiElement element,

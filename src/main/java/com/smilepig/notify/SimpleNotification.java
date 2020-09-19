@@ -17,17 +17,19 @@ public class SimpleNotification {
             new NotificationGroup("protobuf-to-wiki", NotificationDisplayType.BALLOON, true);
 
 
-    public static void notify(Project project, String content) {
+    public static void notify(Project project, String content, String alertTitle) {
         if (notification == null) {
             synchronized (SimpleNotification.class) {
                 if (notification == null) {
-                    notification = NOTIFICATION_GROUP.createNotification("protobuf-to-wiki",
+                    notification = NOTIFICATION_GROUP.createNotification(alertTitle,
                                                                          content,
                                                                          NotificationType.INFORMATION,
                                                                          new WikiGenerateNotificationListener());
                 }
             }
         }
+        notification.setContent(content);
+        notification.setTitle(alertTitle);
         notification.notify(project);
     }
 }
