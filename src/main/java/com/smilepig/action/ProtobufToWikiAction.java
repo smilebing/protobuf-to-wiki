@@ -30,7 +30,6 @@ import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.JBColor;
 import com.smilepig.bean.ProtoMethodBean;
-import com.smilepig.icon.SimpleIcons;
 import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
 import com.smilepig.service.psi.PsiScanService;
@@ -115,6 +114,7 @@ public class ProtobufToWikiAction extends AnAction {
                         //保存用户名密码到本地
                         saveAccountInfo(username, password);
                     }
+                    Messages.showMessageDialog(project, "登录成功", "提示", Messages.getInformationIcon());
                     break;
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -129,28 +129,38 @@ public class ProtobufToWikiAction extends AnAction {
             }
         }
 
-        Messages.showMessageDialog(project, "登录成功", "提示", Messages.getInformationIcon());
-
-
         //搜索proto相关注解，url
         PsiScanService psiScanService = new PsiScanService();
         ProtoMethodBean controllerInfo = psiScanService.getControllerInfo(project, element);
-        if (controllerInfo.getWikiTitle() == null) {
-            String wikiTitle = Messages.showInputDialog(project, "请输入接口名称", "提示", SimpleIcons.FILE);
-            wikiTitle = wikiTitle.trim();
-            if (StringUtils.isEmpty(wikiTitle)) {
-                Messages.showMessageDialog(project, "请输入有效的名称", "提示", Messages.getInformationIcon());
+
+        while (controllerInfo.getWikiTitle() == null) {
+            String wikiTitle = Messages.showInputDialog(project, "请输入接口名称", "提示", Messages.getInformationIcon());
+            if(wikiTitle == null){
                 return;
             }
-            controllerInfo.setWikiTitle(wikiTitle);
-        }
-
-        if (controllerInfo.getWikiUrl() == null) {
-            String wikiUrl = Messages.showInputDialog(project, "请输入wiki地址,新接口不用输入", "提示", SimpleIcons.FILE);
-            if (StringUtils.isNotEmpty(wikiUrl)) {
-                controllerInfo.setWikiUrl(wikiUrl.trim());
+            wikiTitle = wikiTitle.trim();
+            if (StringUtils.isEmpty(wikiTitle)) {
+                Messages.showMessageDialog(project, "请输入有效的名称", "提示", Messages.getWarningIcon());
+            }else{
+                controllerInfo.setWikiTitle(wikiTitle);
             }
         }
+
+        String parentUrl = null;
+        while (parentUrl == null) {
+            String inputUrl = Messages.showInputDialog(project, "请输入该接口wiki挂靠的父目录", "提示", Messages.getInformationIcon());
+            if(inputUrl == null){
+                return;
+            }
+            inputUrl = inputUrl.trim();
+            if (StringUtils.isEmpty(inputUrl) && !inputUrl.startsWith("https://wiki.changingedu.com/pages/viewpage.action?pageId=")) { //todo 正则校验
+                Messages.showMessageDialog(project, "请输入有效的wiki路径", "提示", Messages.getWarningIcon());
+            }else{
+                parentUrl = inputUrl;
+            }
+        }
+
+        //todo 来个loading框
 
         //生成wiki
         PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
@@ -159,14 +169,15 @@ public class ProtobufToWikiAction extends AnAction {
             if(pageEditInfo.getPageId() != null){
                 remotePage = pageService.updatePageInfo(pageEditInfo);
             }else{
-                remotePage = pageService.createPageInfo(pageEditInfo, 134284818L);
+                String keyword = "pageId=";
+                String parentId = parentUrl.substring(parentUrl.indexOf(keyword) + keyword.length());
+                remotePage = pageService.createPageInfo(pageEditInfo, Long.parseLong(parentId));
             }
         } catch (RemoteException ex) {
             ex.printStackTrace();
             //生成wiki失败
             throw new RuntimeException();
         }
-
 
 //        ApplicationManager.getApplication().runReadAction(new Runnable() {
 //            @Override
@@ -211,6 +222,8 @@ public class ProtobufToWikiAction extends AnAction {
             containingMethod.addBefore(docCommentFromText,containingMethod.getModifierList());
             CodeStyleManager.getInstance (element.getManager ()).reformat (containingMethod);
         }
+
+        //todo loading框消失
 
         //发送通知
         SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>",remotePage.getUrl(), remotePage.getTitle()));
