@@ -37,7 +37,7 @@ public class GetProtoBufStructure {
      * @param protoStructureBeans
      * @throws Exception
      */
-    public static void getJarName(Set<String> jarFiles, Map<String, String> protoNameList, List<ProtoStructureBean> protoStructureBeans) throws Exception {
+    public static void getJarName(Set<String> jarFiles, Map<String, String> protoNameList, List<ProtoStructureBean> protoStructureBeans) {
 
         for (String jarFile : jarFiles) {
             try {
@@ -50,7 +50,8 @@ public class GetProtoBufStructure {
                     entry = enumFiles.nextElement();
                     //只获取proto后缀的文件
                     if (!entry.getName().contains("META-INF") || !entry.getName().contains("com")) {
-                        String classFullName = entry.getName();
+                        String[] nameList=entry.getName().split("/");
+                        String classFullName =nameList[nameList.length-1];
                         if (classFullName.endsWith(".proto")) {
                             //文件名称
                             String fileName = classFullName.substring(0, classFullName.indexOf(".proto"));
@@ -170,20 +171,17 @@ public class GetProtoBufStructure {
     }
 
     public static void main(String[] args) {
-        String s = "OrderServiceAddOrderDetailForPiRequest";
-        String[] sList = s.split("-");
-        System.out.println(sList[0]);
         ProtoMethodBean protoMethodBean = new ProtoMethodBean();
         JavaTypeBean requestInfo = new JavaTypeBean();
         requestInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
-        requestInfo.setClassType("CourseSvcClassHourV2ArrangeFormalCourseRequest");
-        requestInfo.setRootClassName("CourseSvcArrangeCourseProto");
+        requestInfo.setClassType("CourseSvcProcessBatchDeleteClassHourCourseApplyRequest");
+        requestInfo.setRootClassName("CourseSvcDeleteCourseProto");
         protoMethodBean.setRequestInfo(requestInfo);
         JavaTypeBean responseInfo = new JavaTypeBean();
 
         responseInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
-        responseInfo.setClassType("CourseSvcDeleteApplyInfoResponse");
-        responseInfo.setRootClassName("CourseSvcDeleteWalletItemProto");
+        responseInfo.setClassType("CourseSvcClassHourDeleteCourseRefundDetailRefundResponse");
+        responseInfo.setRootClassName("CourseSvcDeleteCourseProto");
         protoMethodBean.setResponseInfo(responseInfo);
         PageEditInfo pageEditInfo = getProto(protoMethodBean);
         Gson gson = new Gson();
@@ -227,10 +225,12 @@ public class GetProtoBufStructure {
             PageEditInfo pageEditInfo = new PageEditInfo();
             pageEditInfo.setApplicationContext(protoMethodBean.getApplicationContext());
             pageEditInfo.setMethod(protoMethodBean.getRequestMethod());
-            if(protoMethodBean.getControllerUrl().startsWith("/")){
-                pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
-            }else {
-                pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api/" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+            if(protoMethodBean.getControllerUrl()!=null) {
+                if (protoMethodBean.getControllerUrl().startsWith("/")) {
+                    pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+                } else {
+                    pageEditInfo.setUrl(protoMethodBean.getApplicationContext() + "/api/" + protoMethodBean.getControllerUrl() + protoMethodBean.getMethodUrl());
+                }
             }
             pageEditInfo.setTitle(protoMethodBean.getWikiTitle());
             pageEditInfo.setHeader("Content-Type: application/x-protobuf");
@@ -238,10 +238,10 @@ public class GetProtoBufStructure {
             String wikiUrl = protoMethodBean.getWikiUrl();
             if (wikiUrl != null && wikiUrl.contains("=")) {
                 int index = wikiUrl.indexOf("=");
-                String pageId=wikiUrl.substring(index+1).trim();
+                String pageId = wikiUrl.substring(index + 1).trim();
                 try {
                     pageEditInfo.setPageId(Long.parseLong(pageId));
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }
