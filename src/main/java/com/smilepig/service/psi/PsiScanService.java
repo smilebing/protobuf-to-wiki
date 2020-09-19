@@ -20,6 +20,7 @@ import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.smilepig.bean.JavaTypeBean;
 import com.smilepig.bean.ProtoMethodBean;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,20 +122,21 @@ public class PsiScanService {
             PsiDocTag[] tags = docComment.getTags();
             for (PsiDocTag tag : tags) {
                 if (tag.getName().equals("wiki")) {
+                    String wikiUrl=tag.getText().replace("*","").replace("\n","").replace("@wiki","");
+                    wikiUrl= wikiUrl.trim();
                     //wiki 链接
-                    if (tag.getValueElement() == null) {
-                        continue;
+                    if(StringUtils.isNotEmpty(wikiUrl)){
+                        protoMethodBean.setWikiUrl(wikiUrl);
                     }
-                    String wikiUrl = tag.getValueElement().getText();
-                    protoMethodBean.setWikiUrl(wikiUrl);
                 }
                 if (tag.getName().equals("title")) {
                     //方法名
-                    if (tag.getValueElement() == null) {
-                        continue;
+                    String title=tag.getText().replace("*","").replace("\n","").replace("@title","");
+                    title= title.trim();
+                    //wiki 链接
+                    if(StringUtils.isNotEmpty(title)){
+                        protoMethodBean.setWikiTitle(title);
                     }
-                    String name = tag.getValueElement().getText();
-                    protoMethodBean.setWikiTitle(name);
                 }
             }
         } else {

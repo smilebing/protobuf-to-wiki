@@ -236,8 +236,8 @@ public class ProtobufToWikiAction extends AnAction {
         } else {
             PsiDocComment docCommentFromText = PsiElementFactory
                     .getInstance(project).createDocCommentFromText("    /**\n" +
-                                                                           "     * " + wikiName + "\n" +
-                                                                           "     * " + url + "\n" +
+                                                                           "     * @title " + wikiName + "\n" +
+                                                                           "     * @name " + url + "\n" +
                                                                            "     */\n", containingMethod);
 
             containingMethod.addBefore(docCommentFromText,containingMethod.getModifierList());
