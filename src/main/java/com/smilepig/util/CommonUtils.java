@@ -103,7 +103,7 @@ public class CommonUtils {
         }
 
         if (os.isWindows()) {
-            if (runCommand("explorer", "%s", what))
+            if (runCommand("start", "%s", what))
                 return true;
         }
 

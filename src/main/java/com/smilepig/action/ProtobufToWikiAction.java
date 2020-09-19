@@ -199,37 +199,8 @@ public class ProtobufToWikiAction extends AnAction {
         if (docComment != null) {
             PsiDocTag wikiDoc = docComment.findTagByName("wiki");
             PsiDocTag nameDoc = docComment.findTagByName("title");
-
-            if (nameDoc != null) {
-                Document document = editor.getDocument();
-                if (nameDoc.getValueElement() == null) {
-                    TextRange textRange = nameDoc.getNameElement().getTextRange();
-                    WriteCommandAction.runWriteCommandAction(project, () ->
-                            document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), title)
-                    );
-                }
-            }else{
-                PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
-                        .createDocTagFromText(title);
-                docComment.add(docTagFromText);
-            }
-
-            if (wikiDoc != null) {
-                //wiki 链接
-                Document document = editor.getDocument();
-                if (wikiDoc.getValueElement() == null) {
-                    TextRange textRange = wikiDoc.getNameElement().getTextRange();
-                    WriteCommandAction.runWriteCommandAction(project, () ->
-                            document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), url)
-                    );
-                }
-            }else{
-                PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
-                        .createDocTagFromText(url);
-                docComment.add(docTagFromText);
-            }
-
-
+            updateDocDocument(element, project, editor, docComment, title, nameDoc);
+            updateDocDocument(element, project, editor, docComment, url, wikiDoc);
         } else {
             PsiDocComment docCommentFromText = PsiElementFactory
                     .getInstance(project).createDocCommentFromText("    /**\n" +
@@ -241,10 +212,34 @@ public class ProtobufToWikiAction extends AnAction {
             CodeStyleManager.getInstance (element.getManager ()).reformat (containingMethod);
         }
 
-
-
         //发送通知
         SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>",remotePage.getUrl(), remotePage.getTitle()));
+    }
+
+    private void updateDocDocument(PsiElement element,
+                                   Project project,
+                                   Editor editor,
+                                   PsiDocComment docComment,
+                                   String url, PsiDocTag docTag) {
+        if (docTag != null) {
+            //wiki 链接
+            updateDoc(project, editor, url, docTag);
+        } else {
+            PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
+                    .createDocTagFromText(url);
+            docComment.add (docTagFromText);
+            CodeStyleManager.getInstance(element.getManager()).reformat(docComment);
+        }
+    }
+
+    private void updateDoc(Project project, Editor editor, String url, PsiDocTag wikiDoc) {
+        Document document = editor.getDocument();
+        if (wikiDoc.getValueElement() == null) {
+            TextRange textRange = wikiDoc.getNameElement().getTextRange();
+            WriteCommandAction.runWriteCommandAction(project, () ->
+                    document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), url)
+            );
+        }
     }
 
     private void adaptLoginFromLocal() throws IOException, ServiceException {
