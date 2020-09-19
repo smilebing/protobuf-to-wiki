@@ -20,14 +20,11 @@ import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import com.intellij.psi.formatter.FormatterUtil;
-import com.intellij.psi.impl.source.javadoc.PsiDocCommentImpl;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -43,10 +40,17 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.xml.rpc.ServiceException;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.Properties;
 
 /**
- * Created by zhuhe on 2020/8/28
+ * Created by zhuhe on 2020/9/19
  */
 public class ProtobufToWikiAction extends AnAction {
 
@@ -87,23 +91,34 @@ public class ProtobufToWikiAction extends AnAction {
             return;
         }
 
-        //todo 如果本地有用户名密码, 帮用户登录, 下面流程跳过
+        //如果本地有用户名密码, 帮用户登录, 下面流程跳过
+        try {
+            adaptLoginFromLocal();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("本地登录失败");
+        }
+
         while (pageService == null){
             //登录
             LoginDialog loginDialog = new LoginDialog(true);
             loginDialog.show();
             if (loginDialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-                String name = loginDialog.getjTextFieldName().getText().trim();
-                String pwd = loginDialog.getjTextFieldPwd().getText().trim();
+                String username = loginDialog.getjTextFieldName().getText().trim();
+                String password = loginDialog.getjTextFieldPwd().getText().trim();
                 boolean selected = loginDialog.getjCheckBox().isSelected();
-                logger.debug("登录,name:{},pwd:{},selected:{}", name, pwd, selected);
+                logger.debug("登录,username:{},password:{},selected:{}", username, password, selected);
 
                 try {
-                    pageService = InterfacePageService.getInstance(name, pwd);
+                    pageService = InterfacePageService.getInstance(username, password);
                     if(selected){
-                        //todo 保存用户名密码到本地
+                        //保存用户名密码到本地
+                        saveAccountInfo(username, password);
                     }
                     break;
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    System.err.println("保存用户名密码失败");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     Messages.showMessageDialog(project, "用户名或密码错误", "提示", Messages.getInformationIcon());
@@ -132,13 +147,10 @@ public class ProtobufToWikiAction extends AnAction {
 
         if (controllerInfo.getWikiUrl() == null) {
             String wikiUrl = Messages.showInputDialog(project, "请输入wiki地址,新接口不用输入", "提示", SimpleIcons.FILE);
-            wikiUrl = wikiUrl.trim();
-            if (StringUtils.isEmpty(wikiUrl)) {
-                controllerInfo.setWikiUrl(wikiUrl);
+            if (StringUtils.isNotEmpty(wikiUrl)) {
+                controllerInfo.setWikiUrl(wikiUrl.trim());
             }
         }
-
-
 
         //生成wiki
         PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
@@ -156,12 +168,12 @@ public class ProtobufToWikiAction extends AnAction {
         }
 
 
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("run in other thread");
-            }
-        });
+//        ApplicationManager.getApplication().runReadAction(new Runnable() {
+//            @Override
+//            public void run() {
+//                System.out.println("run in other thread");
+//            }
+//        });
 
 
         //弹窗通知wiki生成成功
@@ -230,5 +242,30 @@ public class ProtobufToWikiAction extends AnAction {
 
         //发送通知
         SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>",remotePage.getUrl(), remotePage.getTitle()));
+    }
+
+    private void adaptLoginFromLocal() throws IOException, ServiceException {
+        String usrHome = System.getProperty("user.home");
+        File file =new File(usrHome + "\\account.properties");
+        if(file.exists()){
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(file));
+            String username = properties.getProperty("username");
+            String password = properties.getProperty("password");
+            pageService = InterfacePageService.getInstance(username, password);
+        }
+    }
+
+    private void saveAccountInfo(String username, String password) throws IOException {
+        String usrHome = System.getProperty("user.home");
+        File file =new File(usrHome + "\\account.properties");
+        if(!file.exists()){
+            file.createNewFile();
+        }
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        writer.write("username="+username);
+        writer.newLine();
+        writer.write("password="+password);
+        writer.close();
     }
 }

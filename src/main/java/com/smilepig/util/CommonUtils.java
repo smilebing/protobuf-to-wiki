@@ -1,18 +1,18 @@
 package com.smilepig.util;
 
-import java.awt.Desktop;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
- * Created by zhuhe on 2020/8/30
+ * Created by zhuhe on 2020/9/19
  */
 public class CommonUtils {
 

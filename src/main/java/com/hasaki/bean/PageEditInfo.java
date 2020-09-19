@@ -2,7 +2,7 @@ package com.hasaki.bean;
 
 /**
  * @Description
- * @Date 2020/9/2
+ * @Date 2020/9/19
  * @Author wenfucheng
  */
 public class PageEditInfo {

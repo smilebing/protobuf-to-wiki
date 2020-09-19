@@ -7,7 +7,7 @@ import com.smilepig.action.ProtobufToWikiAction;
 import java.awt.event.MouseEvent;
 
 /**
- * Created by zhuhe on 2020/9/17
+ * Created by zhuhe on 2020/9/19
  */
 public class ProtoHandler implements GutterIconNavigationHandler {
     @Override

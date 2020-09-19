@@ -1,7 +1,7 @@
 package com.smilepig.bean;
 
 /**
- * Created by zhuhe on 2020/9/15
+ * Created by zhuhe on 2020/9/19
  */
 public class ProtoMethodBean {
     private JavaTypeBean requestInfo;

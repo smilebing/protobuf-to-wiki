@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @Description
  * @Author wangzhaoyang
- * @Date 2020/9/2 16:42
+ * @Date 2020/9/19 10:42
  **/
 public class ProtoStructureBean {
     /**

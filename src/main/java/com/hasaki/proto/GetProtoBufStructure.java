@@ -26,7 +26,7 @@ import java.util.jar.JarFile;
 /**
  * @Description
  * @Author wangzhaoyang
- * @Date 2020/8/29 13:01
+ * @Date 2020/9/19 13:01
  **/
 public class GetProtoBufStructure {
     /**

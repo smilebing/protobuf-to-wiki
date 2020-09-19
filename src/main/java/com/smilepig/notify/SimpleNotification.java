@@ -7,7 +7,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 
 /**
- * Created by zhuhe on 2020/8/30
+ * Created by zhuhe on 2020/9/19
  */
 public class SimpleNotification {
 
