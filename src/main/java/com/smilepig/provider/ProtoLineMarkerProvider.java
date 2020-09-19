@@ -56,7 +56,7 @@ public class ProtoLineMarkerProvider extends RelatedItemLineMarkerProvider {
 //                                                                                                new ArrayList<GotoRelatedItem>());
             int pass = Pass.UPDATE_ALL;
 
-            RelatedItemLineMarkerInfo marker = new RelatedItemLineMarkerInfo(modifierList, modifierList.getTextRange(), SimpleIcons.FILE, pass, t -> "what", protoHandler, GutterIconRenderer.Alignment.CENTER, new ArrayList<GotoRelatedItem>());
+            RelatedItemLineMarkerInfo marker = new RelatedItemLineMarkerInfo(modifierList, modifierList.getTextRange(), SimpleIcons.FILE, pass, t -> "生成wiki", protoHandler, GutterIconRenderer.Alignment.CENTER, new ArrayList<GotoRelatedItem>());
 
             return marker;
         }
