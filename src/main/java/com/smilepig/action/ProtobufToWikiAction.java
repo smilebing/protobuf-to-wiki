@@ -20,6 +20,7 @@ import com.intellij.openapi.ui.popup.Balloon.Position;
 import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiFile;
@@ -152,6 +153,8 @@ public class ProtobufToWikiAction extends AnAction {
             }
         }
 
+        String url = "http://www.baidu.com";
+        String wikiName = "PT 接口名称";
         //生成wiki
         PageEditInfo pageEditInfo=GetProtoBufStructure.getProto(controllerInfo);
         RemotePage remotePage;
@@ -178,7 +181,7 @@ public class ProtobufToWikiAction extends AnAction {
 
         //弹窗通知wiki生成成功
         JBPopupFactory factory = JBPopupFactory.getInstance();
-        BalloonBuilder htmlTextBalloonBuilder = factory.createHtmlTextBalloonBuilder(remotePage.getUrl(), null, JBColor.PINK, new HyperlinkListener() {
+        BalloonBuilder htmlTextBalloonBuilder = factory.createHtmlTextBalloonBuilder(url, null, JBColor.PINK, new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 System.out.println("hyper link");
@@ -193,40 +196,58 @@ public class ProtobufToWikiAction extends AnAction {
         //填充注释
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
         PsiDocComment docComment = containingMethod.getDocComment();
-        String title = "@title " + controllerInfo.getWikiTitle();
-        String url = "@wiki " + remotePage.getUrl();
 
         if (docComment != null) {
             PsiDocTag wikiDoc = docComment.findTagByName("wiki");
-            PsiDocTag nameDoc = docComment.findTagByName("title");
-            updateDocDocument(element, project, editor, docComment, title, nameDoc);
-            updateDocDocument(element, project, editor, docComment, url, wikiDoc);
+            String wikiDocUrl = "@wiki " + url;
+            String title = "@title " + wikiName;
+
+            if (wikiDoc != null) {
+                //wiki 链接
+                wikiDoc = docComment.findTagByName("wiki");
+                updateDoc(project, editor, wikiDocUrl, wikiDoc);
+            } else {
+
+                PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
+                        .createDocTagFromText(wikiDocUrl);
+                docComment.add(docTagFromText);
+            }
+
+            PsiDocTag titleDoc = containingMethod.getDocComment().findTagByName("title");
+            if (titleDoc != null) {
+                updateDoc(project, editor, title, titleDoc);
+            } else {
+                PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
+                        .createDocTagFromText(title);
+                docComment.add(docTagFromText);
+            }
+
         } else {
             PsiDocComment docCommentFromText = PsiElementFactory
                     .getInstance(project).createDocCommentFromText("    /**\n" +
-                                                                           "     * " + title + "\n" +
+                                                                           "     * " + controllerInfo.getWikiTitle() + "\n" +
                                                                            "     * " + url + "\n" +
                                                                            "     */\n", containingMethod);
 
             containingMethod.addBefore(docCommentFromText,containingMethod.getModifierList());
-            CodeStyleManager.getInstance (element.getManager ()).reformat (containingMethod);
         }
+        CodeStyleManager.getInstance (element.getManager ()).reformat (containingMethod);
+
 
         //发送通知
-        SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>",remotePage.getUrl(), remotePage.getTitle()));
+        SimpleNotification.notify(project, String.format("<a href='%s'>%s</a>", url, controllerInfo.getWikiTitle()));
     }
 
     private void updateDocDocument(PsiElement element,
                                    Project project,
                                    Editor editor,
                                    PsiDocComment docComment,
-                                   String url, PsiDocTag docTag) {
+                                   String value, PsiDocTag docTag) {
         if (docTag != null) {
-            //wiki 链接
-            updateDoc(project, editor, url, docTag);
+            updateDoc(project, editor, value, docTag);
         } else {
             PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
-                    .createDocTagFromText(url);
+                    .createDocTagFromText(value);
             docComment.add (docTagFromText);
             CodeStyleManager.getInstance(element.getManager()).reformat(docComment);
         }
@@ -240,6 +261,8 @@ public class ProtobufToWikiAction extends AnAction {
                     document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), url)
             );
         }
+        PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document);
+        PsiDocumentManager.getInstance(project).commitDocument(document);
     }
 
     private void adaptLoginFromLocal() throws IOException, ServiceException {
