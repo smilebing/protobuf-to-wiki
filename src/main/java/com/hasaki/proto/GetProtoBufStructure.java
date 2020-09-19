@@ -173,15 +173,15 @@ public class GetProtoBufStructure {
     public static void main(String[] args) {
         ProtoMethodBean protoMethodBean = new ProtoMethodBean();
         JavaTypeBean requestInfo = new JavaTypeBean();
-        requestInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
-        requestInfo.setClassType("CourseSvcProcessBatchDeleteClassHourCourseApplyRequest");
-        requestInfo.setRootClassName("CourseSvcDeleteCourseProto");
+        requestInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200919.123818-288.jar");
+        requestInfo.setClassType("CourseSvcHackathonDemoRequest");
+        requestInfo.setRootClassName("CourseSvcHackathonDemoProto");
         protoMethodBean.setRequestInfo(requestInfo);
         JavaTypeBean responseInfo = new JavaTypeBean();
 
-        responseInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200915.021910-285.jar");
-        responseInfo.setClassType("CourseSvcClassHourDeleteCourseRefundDetailRefundResponse");
-        responseInfo.setRootClassName("CourseSvcDeleteCourseProto");
+        responseInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200919.123818-288.jar");
+        responseInfo.setClassType("CourseSvcHackathonDemoProto.CourseSvcHackathonDemoResponse");
+        responseInfo.setRootClassName("CourseSvcHackathonDemoProto");
         protoMethodBean.setResponseInfo(responseInfo);
         PageEditInfo pageEditInfo = getProto(protoMethodBean);
         Gson gson = new Gson();
@@ -211,11 +211,16 @@ public class GetProtoBufStructure {
                 jarFiles.add(getProtoFilePath(getProjectPath(jarPath)));
             }
             //构造Request
+            String classType=javaTypeBean.getClassType();
+            String[] classTypeList=classType.split("\\.");
             jarFiles.add(javaTypeBean.getJarPath());
-            protoMap.put(javaTypeBean.getClassType(), javaTypeBean.getRootClassName());
+            protoMap.put(classTypeList[classTypeList.length-1], javaTypeBean.getRootClassName());
             //构造Response
+            String classTypeResponse=protoMethodBean.getResponseInfo().getClassType();
+            String[] classTypeResponseList=classTypeResponse.split("\\.");
+            jarFiles.add(javaTypeBean.getJarPath());
             jarFiles.add(protoMethodBean.getResponseInfo().getJarPath());
-            protoMap.put(protoMethodBean.getResponseInfo().getClassType(), protoMethodBean.getResponseInfo().getRootClassName());
+            protoMap.put(classTypeResponseList[classTypeResponseList.length-1], protoMethodBean.getResponseInfo().getRootClassName());
 
 
             List<ProtoStructureBean> protoStructureBeansAll = new ArrayList<>();
