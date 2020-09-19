@@ -193,46 +193,49 @@ public class ProtobufToWikiAction extends AnAction {
         //填充注释
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
         PsiDocComment docComment = containingMethod.getDocComment();
-        boolean hasWikiDoc = false;
-        boolean hasNameDoc = false;
+        String title = "@title " + controllerInfo.getWikiTitle();
+        String url = "@wiki " + remotePage.getUrl();
+
         if (docComment != null) {
             PsiDocTag wikiDoc = docComment.findTagByName("wiki");
-            PsiDocTag nameDoc = docComment.findTagByName("name");
+            PsiDocTag nameDoc = docComment.findTagByName("title");
+
+            if (nameDoc != null) {
+                Document document = editor.getDocument();
+                if (nameDoc.getValueElement() == null) {
+                    TextRange textRange = nameDoc.getNameElement().getTextRange();
+                    WriteCommandAction.runWriteCommandAction(project, () ->
+                            document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), title)
+                    );
+                }
+            }else{
+                PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
+                        .createDocTagFromText(title);
+                docComment.add(docTagFromText);
+            }
 
             if (wikiDoc != null) {
                 //wiki 链接
-                hasWikiDoc = true;
                 Document document = editor.getDocument();
                 if (wikiDoc.getValueElement() == null) {
-                    //有@wiki，没有wiki链接
-                    String url = "@wiki wiki.changingedu.com/lalala";
                     TextRange textRange = wikiDoc.getNameElement().getTextRange();
                     WriteCommandAction.runWriteCommandAction(project, () ->
                             document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), url)
                     );
                 }
+            }else{
+                PsiDocTag docTagFromText = PsiElementFactory.getInstance(project)
+                        .createDocTagFromText(url);
+                docComment.add(docTagFromText);
             }
 
-            if (nameDoc != null) {
-                hasNameDoc = true;
-                Document document = editor.getDocument();
-                if (nameDoc.getValueElement() == null) {
-                    String url = "@name " + controllerInfo.getWikiTitle();
-                    TextRange textRange = nameDoc.getNameElement().getTextRange();
-                    WriteCommandAction.runWriteCommandAction(project, () ->
-                            document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), url)
-                    );
-                }
-            }
 
         } else {
             PsiDocComment docCommentFromText = PsiElementFactory
                     .getInstance(project).createDocCommentFromText("    /**\n" +
-                                                  "     * 学生答疑欠费详情\n" +
-                                                  "     *\n" +
-                                                  "     * @param httpServletRequest\n" +
-                                                  "     * @return\n" +
-                                                  "     */\n",containingMethod);
+                                                                           "     * " + title + "\n" +
+                                                                           "     * " + url + "\n" +
+                                                                           "     */\n", containingMethod);
 
             containingMethod.addBefore(docCommentFromText,containingMethod.getModifierList());
             CodeStyleManager.getInstance (element.getManager ()).reformat (containingMethod);

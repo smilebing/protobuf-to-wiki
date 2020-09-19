@@ -128,7 +128,7 @@ public class PsiScanService {
                     String wikiUrl = tag.getValueElement().getText();
                     protoMethodBean.setWikiUrl(wikiUrl);
                 }
-                if (tag.getName().equals("name")) {
+                if (tag.getName().equals("title")) {
                     //方法名
                     if (tag.getValueElement() == null) {
                         continue;
