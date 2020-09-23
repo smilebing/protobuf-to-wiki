@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -31,8 +32,6 @@ import com.smilepig.notify.LoginDialog;
 import com.smilepig.notify.SimpleNotification;
 import com.smilepig.service.psi.PsiScanService;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.rpc.ServiceException;
 import java.io.BufferedWriter;
@@ -48,7 +47,7 @@ import java.util.Properties;
  */
 public class ProtobufToWikiAction extends AnAction {
 
-    private final static Logger logger = LoggerFactory.getLogger(ProtobufToWikiAction.class);
+    private final static Logger logger = Logger.getInstance(ProtobufToWikiAction.class);
 
     private InterfacePageService pageService;
 

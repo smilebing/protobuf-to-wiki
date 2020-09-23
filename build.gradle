@@ -55,3 +55,7 @@ dependencies {
 
     compile 'com.google.code.gson:gson:2.6.2'
 }
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
