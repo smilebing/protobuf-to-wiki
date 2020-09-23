@@ -9,6 +9,6 @@ import javax.swing.*;
  */
 public class SimpleIcons {
 
-    public static final Icon FILE = IconLoader.getIcon("/icons/doc.png");
+    public static final Icon FILE = IconLoader.getIcon("/icons/icon.png");
 
 }
