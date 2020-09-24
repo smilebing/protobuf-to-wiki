@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.hasaki</id>
-    <name>protobuf-to-wiki</name>
+    <name>WikiHelper-Beat</name>
     <version>1.0</version>
     <vendor email="iblandshot@gmailcom" url="http://www.zhudahe.cn">smilepig</vendor>
 

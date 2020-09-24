@@ -57,7 +57,7 @@ public class GetProtoBufStructure {
                             String fileName = classFullName.substring(0, classFullName.indexOf(".proto"));
                             //获取文件流
                             InputStream input = jar.getInputStream(entry);
-                            InputStreamReader isr = new InputStreamReader(input);
+                            InputStreamReader isr = new InputStreamReader(input,"utf-8");
                             BufferedReader reader = new BufferedReader(isr);
                             //
                             String line;
