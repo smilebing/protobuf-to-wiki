@@ -199,29 +199,36 @@ public class GetProtoBufStructure {
             if (protoMethodBean == null) {
                 throw new Exception("protoMethodBean is null");
             }
-            if (protoMethodBean.getRequestInfo() == null || protoMethodBean.getResponseInfo() == null) {
+            if (protoMethodBean.getRequestInfo() == null && protoMethodBean.getResponseInfo() == null) {
                 throw new Exception("request or response is null,protoMethodBean:" + new Gson().toJson(protoMethodBean));
             }
-            JavaTypeBean javaTypeBean = protoMethodBean.getRequestInfo();
+
 
             Map<String, String> protoMap = new HashMap<>();
             Set<String> jarFiles = new HashSet<>();
-            String jarPath = javaTypeBean.getJarPath();
-            if (!jarPath.contains("protobuf-base") && !protoMethodBean.getRequestInfo().getJarPath().contains("protobuf-base")) {
-                jarFiles.add(getProtoFilePath(getProjectPath(jarPath)));
-            }
             //构造Request
-            String classType=javaTypeBean.getClassType();
-            String[] classTypeList=classType.split("\\.");
-            jarFiles.add(javaTypeBean.getJarPath());
-            protoMap.put(classTypeList[classTypeList.length-1], javaTypeBean.getRootClassName());
+            if(protoMethodBean.getRequestInfo()!=null) {
+                String classType = protoMethodBean.getRequestInfo().getClassType();
+                String[] classTypeList = classType.split("\\.");
+                jarFiles.add(protoMethodBean.getRequestInfo().getJarPath());
+                protoMap.put(classTypeList[classTypeList.length - 1], protoMethodBean.getRequestInfo().getRootClassName());
+            }
             //构造Response
-            String classTypeResponse=protoMethodBean.getResponseInfo().getClassType();
-            String[] classTypeResponseList=classTypeResponse.split("\\.");
-            jarFiles.add(javaTypeBean.getJarPath());
-            jarFiles.add(protoMethodBean.getResponseInfo().getJarPath());
-            protoMap.put(classTypeResponseList[classTypeResponseList.length-1], protoMethodBean.getResponseInfo().getRootClassName());
-
+            if(protoMethodBean.getResponseInfo()!=null) {
+                String classTypeResponse = protoMethodBean.getResponseInfo().getClassType();
+                String[] classTypeResponseList = classTypeResponse.split("\\.");
+                jarFiles.add(protoMethodBean.getResponseInfo().getJarPath());
+                protoMap.put(classTypeResponseList[classTypeResponseList.length - 1], protoMethodBean.getResponseInfo().getRootClassName());
+            }
+            boolean isBaseProto=false;
+            for (String jarFile : jarFiles) {
+                if(jarFile.contains("protobuf-base")){
+                    isBaseProto=true;
+                }
+            }
+            if(!isBaseProto) {
+                jarFiles.add(getProtoFilePath(getProjectPath(jarFiles.iterator().next())));
+            }
 
             List<ProtoStructureBean> protoStructureBeansAll = new ArrayList<>();
             //获取proto结构关系
