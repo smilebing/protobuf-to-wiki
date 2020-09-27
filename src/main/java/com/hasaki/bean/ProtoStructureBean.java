@@ -33,6 +33,16 @@ public class ProtoStructureBean {
      */
     private List<String>  importTitleList;
 
+    private Integer  protoType; //1 response 2 request 3 普通子结构
+
+    public Integer getProtoType() {
+        return protoType;
+    }
+
+    public void setProtoType(Integer protoType) {
+        this.protoType = protoType;
+    }
+
     public List<String> getImportTitleList() {
         return importTitleList;
     }

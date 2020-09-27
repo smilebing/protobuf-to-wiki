@@ -37,7 +37,7 @@ public class GetProtoBufStructure {
      * @param protoStructureBeans
      * @throws Exception
      */
-    public static void getJarName(Set<String> jarFiles, Map<String, String> protoNameList, List<ProtoStructureBean> protoStructureBeans) {
+    public static void getJarName(Set<String> jarFiles, Map<String, String> protoNameList, List<ProtoStructureBean> protoStructureBeans,int count) throws Exception {
 
         for (String jarFile : jarFiles) {
             try {
@@ -102,13 +102,15 @@ public class GetProtoBufStructure {
                                         if (sonProto.size() > 0) {
                                             protoStructureBean.setSubProtoTitles(sonProto);
                                             for (String s : sonProto) {
-                                                protoNameList.put(s + "-" + protoStructureBean.getProtoName(), protoStructureBean.getProtoTitle());
+                                                protoNameList.put(s + "-" + protoStructureBean.getProtoName(), protoStructureBean.getProtoTitle()+",3");
                                             }
                                         }
                                         sonProto = new ArrayList<>();
                                         stringBuilder = new StringBuilder();
                                         isMatchMethod = false;
                                     }
+                                    stringLine.add(line);
+                                    continue;
                                 }
                                 Iterator<String> it = protoNameList.keySet().iterator();
                                 while (it.hasNext()) {
@@ -116,14 +118,17 @@ public class GetProtoBufStructure {
                                     String[] sList = s.split("-");
                                     String protoName = sList[0];
                                     String value = protoNameList.get(s);
-                                    if ((protoName.endsWith("Response") || protoName.endsWith("Request")) && !protoName.equals("BaseResponse")) {
-                                        if (!classname.contains(value)) {
+                                    String[] valueList = value.split(",");
+                                    String fileTitle=valueList[0];
+                                    Integer type=Integer.valueOf(valueList[1]);
+                                    if (type==1 || type==2) {
+                                        if (!classname.contains(fileTitle)) {
                                             continue;
                                         }
                                     } else {
                                         List<String> stringList = new ArrayList<>();
                                         for (ProtoStructureBean structureBean : protoStructureBeans) {
-                                            if (structureBean.getProtoTitle().equals(value)) {
+                                            if (structureBean.getProtoTitle().equals(fileTitle)) {
                                                 stringList = structureBean.getImportTitleList();
 
                                             }
@@ -139,6 +144,7 @@ public class GetProtoBufStructure {
                                         protoStructureBean.setProtoName(protoName);
                                         protoStructureBean.setProtoFileName(fileName);
                                         protoStructureBean.setImportTitleList(importList);
+                                        protoStructureBean.setProtoType(type);
                                         it.remove();
                                         if (protoStructureBeans.contains(protoStructureBean)) {
                                             continue;
@@ -165,8 +171,11 @@ public class GetProtoBufStructure {
                 e.printStackTrace();
             }
         }
+        if(count<=0){
+            throw new Exception("request or response not exist,check if the proto file is in the jar");
+        }
         if (protoNameList.size() > 0) {
-            getJarName(jarFiles, protoNameList, protoStructureBeans);
+            getJarName(jarFiles, protoNameList, protoStructureBeans,--count);
         }
     }
 
@@ -174,14 +183,14 @@ public class GetProtoBufStructure {
         ProtoMethodBean protoMethodBean = new ProtoMethodBean();
         JavaTypeBean requestInfo = new JavaTypeBean();
         requestInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200919.123818-288.jar");
-        requestInfo.setClassType("CourseSvcHackathonDemoRequest");
-        requestInfo.setRootClassName("CourseSvcHackathonDemoProto");
+        requestInfo.setClassType("CourseSvcFormalArrangeOrderArrangeRequest");
+        requestInfo.setRootClassName("CourseSvcArrangeCourseProto");
         protoMethodBean.setRequestInfo(requestInfo);
         JavaTypeBean responseInfo = new JavaTypeBean();
 
         responseInfo.setJarPath("E:\\Maven\\repository\\com\\qingqing\\api\\protobuf-coursesvc\\1.0.0-SNAPSHOT\\protobuf-coursesvc-1.0.0-20200919.123818-288.jar");
-        responseInfo.setClassType("CourseSvcHackathonDemoProto.CourseSvcHackathonDemoResponse");
-        responseInfo.setRootClassName("CourseSvcHackathonDemoProto");
+        responseInfo.setClassType("CourseSvcTeacherClassAppealBriefInfoResponse");
+        responseInfo.setRootClassName("CourseSvcTeacherClassAppealProto");
         protoMethodBean.setResponseInfo(responseInfo);
         PageEditInfo pageEditInfo = getProto(protoMethodBean);
         Gson gson = new Gson();
@@ -211,14 +220,14 @@ public class GetProtoBufStructure {
                 String classType = protoMethodBean.getRequestInfo().getClassType();
                 String[] classTypeList = classType.split("\\.");
                 jarFiles.add(protoMethodBean.getRequestInfo().getJarPath());
-                protoMap.put(classTypeList[classTypeList.length - 1], protoMethodBean.getRequestInfo().getRootClassName());
+                protoMap.put(classTypeList[classTypeList.length - 1], protoMethodBean.getRequestInfo().getRootClassName()+",2");
             }
             //构造Response
             if(protoMethodBean.getResponseInfo()!=null) {
                 String classTypeResponse = protoMethodBean.getResponseInfo().getClassType();
                 String[] classTypeResponseList = classTypeResponse.split("\\.");
                 jarFiles.add(protoMethodBean.getResponseInfo().getJarPath());
-                protoMap.put(classTypeResponseList[classTypeResponseList.length - 1], protoMethodBean.getResponseInfo().getRootClassName());
+                protoMap.put(classTypeResponseList[classTypeResponseList.length - 1], protoMethodBean.getResponseInfo().getRootClassName()+",1");
             }
             boolean isBaseProto=false;
             for (String jarFile : jarFiles) {
@@ -232,7 +241,7 @@ public class GetProtoBufStructure {
 
             List<ProtoStructureBean> protoStructureBeansAll = new ArrayList<>();
             //获取proto结构关系
-            getJarName(jarFiles, protoMap, protoStructureBeansAll);
+            getJarName(jarFiles, protoMap, protoStructureBeansAll,5);
 
             PageEditInfo pageEditInfo = new PageEditInfo();
             pageEditInfo.setApplicationContext(protoMethodBean.getApplicationContext());
@@ -258,12 +267,12 @@ public class GetProtoBufStructure {
                 }
             }
             for (ProtoStructureBean protoStructureBean : protoStructureBeansAll) {
-                if ((protoStructureBean.getProtoName().endsWith("Response")) && !protoStructureBean.getProtoName().equals("BaseResponse")) {
+                if (protoStructureBean.getProtoType()==1) {
                     //递归构造responseProto的子结构
                     setProtoStructureBeans(protoStructureBean, protoStructureBeansAll);
                     pageEditInfo.setResponseProto(protoStructureBean);
                 }
-                if (protoStructureBean.getProtoName().endsWith("Request")) {
+                if (protoStructureBean.getProtoType()==2) {
                     //递归构造requestProto的子结构
                     setProtoStructureBeans(protoStructureBean, protoStructureBeansAll);
                     pageEditInfo.setRequestProto(protoStructureBean);
